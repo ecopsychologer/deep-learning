@@ -95,18 +95,17 @@ def train(generator, discriminator, dataset, epochs, writer):
                 generator_optimizer.apply_gradients(zip(gradients_of_generator, generator.trainable_variables))
                 discriminator_optimizer.apply_gradients(zip(gradients_of_discriminator, discriminator.trainable_variables))
                 
-                with tf.summary.record_if(epoch % 10 == 0):
+                with tf.summary.record_if(epoch % 5 == 0):
                     tf.summary.scalar('gen_loss', gen_loss, step=epoch)
                     tf.summary.scalar('disc_loss', disc_loss, step=epoch)
 
 
         # Save the model every few epochs
-        if (epoch + 1) % 100 == 0 or epoch == epochs - 1:
+        if (epoch + 1) % 100 == 0 or epoch == EPOCHS - 1:
             generate_and_save_images(generator, epoch + 1, seed, writer)
 
     # Generate after the final epoch
-    display.clear_output(wait=True)
-    generate_and_save_images(generator, epochs, seed)
+    generate_and_save_images(generator, EPOCHS, seed)
 
 cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=False)
 
