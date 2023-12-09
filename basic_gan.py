@@ -19,7 +19,7 @@ log_dir = "logs/"
 """ values below do NOT require a reset """
 # These control how quickly the generator and discriminator learn. Too high, and they may overshoot optimal solutions; too low, and they may get stuck or learn very slowly.
 # If the discriminator learns too fast, it may overfit to the current generator's output and not provide useful gradients. If the generator's learning rate is too low in comparison, it may not catch up, leading to poor image quality.
-gen_learn_rate = 0.0015
+gen_learn_rate = 0.002
 disc_learn_rate = 0.00005 # lower rate for the discriminator helps generator
 # Larger batches provide more stable gradients but may require more memory and computational power, while smaller batches can sometimes encourage diversity in the generated images and can lead to faster convergence but may also introduce more noise into the training process.
 BATCH_SIZE = 170
