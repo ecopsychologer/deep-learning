@@ -184,6 +184,8 @@ def load_model_weights():
 summary_writer = tf.summary.create_file_writer(log_dir)
 
 def train(generator, discriminator, dataset, epochs, writer):
+    if (find_latest_epoch() != None):
+        epoch = find_latest_epoch()
     with writer.as_default():
         for epoch in range(epochs):
             start_time = time.time()
