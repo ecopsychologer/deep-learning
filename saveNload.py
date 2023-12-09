@@ -68,3 +68,31 @@ def load_model_weights(gen, disc):
         print(f"Model weights restored from epoch {latest_epoch}")
     else:
         print("No saved model weights found, starting from scratch.")
+        
+def clear_logs_and_checkpoints():
+    config.create_console_space()
+    
+    # Clear TensorBoard logs in the directory
+    if os.path.exists(log_dir):
+        for file in glob.glob(f'./{log_dir}*'):
+            os.remove(file)
+        print(f"Cleared TensorBoard logs in {log_dir}")
+    else:
+        print(f"Attempted to clear logs, but none exist in: {log_dir}")
+        # create log directory
+        os.makedirs(log_dir, exist_ok=True)
+        os.chmod(log_dir, stat.S_IRWXU | stat.S_IRGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)
+        print(f"Created empty log directory: {log_dir}")
+
+    # Clear generator and discriminator checkpoint files
+    for file in glob.glob('./gen_epoch_*.index') + glob.glob('./disc_epoch_*.index'):
+        os.remove(file)
+        data_file = file.replace('.index', '.data-00000-of-00001')
+        if os.path.exists(data_file):
+            os.remove(data_file)
+        print(f"Removed checkpoint file: {file} and {data_file}")
+        
+    # Clear Checkpoint file
+    if os.path.exists("./checkpoint"):
+        os.remove("./checkpoint")
+        print(f"Removed checkpoint file.")

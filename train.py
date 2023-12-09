@@ -1,5 +1,61 @@
 import tensorflow as tf
-import time, config, saveNload
+from tensorflow.keras.layers import Dense, Flatten, Reshape, GaussianNoise, BatchNormalization, Dropout, Layer
+from tensorflow.keras import Sequential
+import config, saveNload, time
+
+seed = tf.random.normal([config.NUM_EXAMPLES_TO_GEN, config.NOISE_DIM])
+
+class MiniBatchDiscrimination(Layer):
+    def __init__(self, num_kernels, kernel_dim, **kwargs):
+        super(MiniBatchDiscrimination, self).__init__(**kwargs)
+        self.num_kernels = num_kernels
+        self.kernel_dim = kernel_dim
+
+    def build(self, input_shape):
+        self.kernel = self.add_weight(
+            name='kernel',
+            shape=(input_shape[-1], self.num_kernels * self.kernel_dim),
+            initializer='glorot_uniform',
+            trainable=True)
+
+    def call(self, input):
+        activation = tf.matmul(input, self.kernel)
+        activation = tf.reshape(activation, (-1, self.num_kernels, self.kernel_dim))
+        diff = tf.expand_dims(activation, 3) - tf.expand_dims(tf.transpose(activation, [1, 2, 0]), 0)
+        l1_norm = tf.reduce_sum(tf.abs(diff), axis=2)
+        mb_feats = tf.reduce_sum(tf.exp(-l1_norm), axis=-1)
+        return tf.concat([input, mb_feats], axis=1)
+
+    def get_config(self):
+        config = super(MiniBatchDiscrimination, self).get_config()
+        config.update({
+            'num_kernels': self.num_kernels,
+            'kernel_dim': self.kernel_dim
+        })
+        return config
+
+
+def build_generator():
+    model = Sequential([
+        GaussianNoise(0.115, input_shape=(config.NOISE_DIM,)),  # Add noise to input
+        Dense(gen_complexity, activation='relu', input_shape=(100,)),  # 100-dimensional noise
+        BatchNormalization(),
+        # Dense(gen_complexity/2, activation='relu'), # add an additional layer half as complex
+        Dropout(0.3),                               # add dropout
+        Dense(784, activation='sigmoid'),           # Reshape to 28x28 image
+        Reshape((28, 28))
+    ])
+    return model
+
+def build_discriminator():
+    model = Sequential([
+        Flatten(input_shape=(28, 28)),
+        Dense(disc_complexity, activation='LeakyReLU'),
+        Dropout(0.4),  # Add dropout
+        MiniBatchDiscrimination(num_kernels=50, kernel_dim=5),
+        Dense(1, activation='sigmoid')
+    ])
+    return model
 
 def train(generator, gen_opt, discriminator, disc_opt, dataset, start_epoch, epochs, writer):
     with writer.as_default():

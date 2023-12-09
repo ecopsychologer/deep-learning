@@ -25,6 +25,9 @@ LOG_DIR = "logs/"
 EPOCHS = 5000
 BUFFER_SIZE = 60000
 
+NUM_EXAMPLES_TO_GEN = 16  # Number of images to generate for visualization
+NOISE_DIM = 100  # Dimensionality of the noise vector
+
 def create_console_space():
     print(f"")
     print(f"\\**********||=+=||**********//")
