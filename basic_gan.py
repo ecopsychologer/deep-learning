@@ -274,10 +274,10 @@ train_dataset = tf.data.Dataset.from_tensor_slices(train_images).shuffle(BUFFER_
 seed = tf.random.normal([num_examples_to_generate, noise_dim])
 
 EPOCHS = 5000 # enough to run all night, I hope
-hail_mary = True
 
 def main(reset=False):
     latest_epoch = find_latest_epoch()
+    hail_mary = True
     # If reset is True, remove the checkpoints, else load them
     if reset and hail_mary:
         hail_mary = False
