@@ -25,7 +25,7 @@ noise_dim = 100  # Dimensionality of the noise vector
 
 # increased complexity helps it learn
 gen_complexity = 256
-build_complexity = 128
+disc_complexity = 128
 
 def build_generator():
     model = Sequential([
@@ -37,7 +37,7 @@ def build_generator():
 def build_discriminator():
     model = Sequential([
         Flatten(input_shape=(28, 28)),
-        Dense(build_complexity, activation='relu'),
+        Dense(disc_complexity, activation='relu'),
         Dense(1, activation='sigmoid')
     ])
     return model
@@ -119,7 +119,7 @@ def train(generator, discriminator, dataset, epochs, writer):
                     tf.summary.scalar('gen_loss', gen_loss, step=epoch)
                     tf.summary.scalar('disc_loss', disc_loss, step=epoch)
             # Save the model every few epochs
-            if (epoch + 1) % 25 == 0 or epoch == EPOCHS - 1:
+            if (epoch + 1) % 10 == 0 or epoch == EPOCHS - 1:
                 generate_and_save_images(generator, epoch + 1, seed, writer)
 
     # Generate after the final epoch
@@ -128,7 +128,7 @@ def train(generator, discriminator, dataset, epochs, writer):
 cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=False)
 
 # lowering disc_confidence can help the generator learn better
-disc_confidence = 0.97
+disc_confidence = 0.94
 def discriminator_loss(real_labels, fake_labels, real_output, fake_output):
     real_loss = cross_entropy(real_labels*disc_confidence, real_output)
     fake_loss = cross_entropy(fake_labels, fake_output)
@@ -164,7 +164,7 @@ BUFFER_SIZE = 60000
 train_dataset = tf.data.Dataset.from_tensor_slices(train_images).shuffle(BUFFER_SIZE).batch(BATCH_SIZE)
 seed = tf.random.normal([num_examples_to_generate, noise_dim])
 
-EPOCHS = 1000
+EPOCHS = 500
 
 summary_writer = tf.summary.create_file_writer(log_dir)
 
