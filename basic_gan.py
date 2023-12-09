@@ -87,7 +87,7 @@ def clear_logs_and_checkpoints():
 
     # Recreate the log directory
     os.makedirs(log_dir, exist_ok=True)
-    perms = stat.S_IWUSR and stat.S_IWGRP and stat.S_IWOTH
+    perms = stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR | stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IWOTH | stat.S_IXOTH
     os.chmod(log_dir, perms)
     print(f"Recreated empty log directory: {log_dir}")
 
@@ -277,10 +277,8 @@ EPOCHS = 5000 # enough to run all night, I hope
 
 def main(reset=False):
     latest_epoch = find_latest_epoch()
-    hail_mary = True
     # If reset is True, remove the checkpoints, else load them
-    if reset and hail_mary:
-        hail_mary = False
+    if reset:
         clear_logs_and_checkpoints()
         if os.path.exists("gen.index"):
             os.remove("gen.index")
