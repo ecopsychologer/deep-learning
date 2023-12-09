@@ -164,14 +164,25 @@ def start_tensorboard(logdir, port=6006):
     tb.configure(argv=[None, '--logdir', logdir, '--port', str(port)])
     url = tb.launch()
     print(f"TensorBoard started at {url}")
+    
+def load_model_weights_if_exist():
+    # Define patterns for generator and discriminator
+    gen_pattern = "ckpt_*-gen"
+    disc_pattern = "ckpt_*-disc"
+
+    # Find the latest checkpoint for generator and discriminator
+    latest_gen = tf.train.latest_checkpoint(checkpoint_dir, latest_filename=gen_pattern)
+    latest_disc = tf.train.latest_checkpoint(checkpoint_dir, latest_filename=disc_pattern)
+
+    if latest_gen and latest_disc:
+        print(f"Restoring generator from {latest_gen}")
+        generator.load_weights(latest_gen)
+        print(f"Restoring discriminator from {latest_disc}")
+        discriminator.load_weights(latest_disc)
 
 def train(generator, discriminator, dataset, epochs, writer):
     # Check for the latest checkpoint
-    latest = tf.train.latest_checkpoint(checkpoint_dir)
-    if latest:
-        print(f"Restoring from {latest}")
-        generator.load_weights(latest)
-        discriminator.load_weights(latest)
+    load_model_weights_if_exist()
         
     with writer.as_default():
         for epoch in range(epochs):
@@ -201,10 +212,11 @@ def train(generator, discriminator, dataset, epochs, writer):
             # End of epoch
             if (epoch + 1) % 10 == 0 or epoch == EPOCHS - 1:
                 # Save the model every 10 epochs
-                checkpoint_name = f"{checkpoint_prefix}_epoch_{epoch}"
-                generator.save_weights(checkpoint_name)
-                discriminator.save_weights(checkpoint_name)
-                print(f"Checkpoint saved at {checkpoint_name}")
+                gen_name = f"{checkpoint_prefix}_epoch_{epoch}-gen"
+                generator.save_weights(gen_name)
+                disc_name = f"{checkpoint_prefix}_epoch_{epoch}-disc"
+                discriminator.save_weights(disc_name)
+                print(f"Checkpoint saved at {checkpoint_prefix}_epoch_{epoch}")
 
             # Log the time it takes for each epoch
             duration = time.time() - start_time
