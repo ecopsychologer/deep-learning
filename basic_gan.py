@@ -49,7 +49,12 @@ checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
     filepath=checkpoint_dir,
     save_weights_only=True)
 
+def create_console_space():
+    print(f"")
+    print(f"\\**********||=+=||**********//")
+
 def clear_checkpoint_dir():
+    create_console_space()
     if os.path.exists(checkpoint_dir):
         shutil.rmtree(checkpoint_dir)
         print(f"Cleared checkpoint directory: {checkpoint_dir}")
@@ -57,6 +62,7 @@ def clear_checkpoint_dir():
         print(f"Attempted to clear checkpoint directory, but one does not exist in: {checkpoint_dir}")
 
 log_dir = "logs/"
+create_console_space()
 # Check if the directory exists
 if os.path.exists(log_dir):
     # Delete the contents of the directory
@@ -67,6 +73,7 @@ else:
 
 # Recreate the log directory
 os.makedirs(log_dir, exist_ok=True)
+create_console_space()
 print(f"Recreated empty log directory: {log_dir}")
 
 num_examples_to_generate = 16  # Number of images to generate for visualization
@@ -161,14 +168,18 @@ def start_tensorboard(logdir, port=6006):
     tb = TensorBoard()
     tb.configure(argv=[None, '--logdir', logdir, '--port', str(port)])
     url = tb.launch()
+    create_console_space()
     print(f"TensorBoard started at {url}")
     
 def load_model_weights_if_exist():
     if os.path.exists(checkpoint_dir):
-        print(f"Restoring generator")
+        create_console_space()
+        print(f"Restoring generator...")
         generator.load_weights("gen")
+        print(f"Done!")
         print(f"Restoring discriminator")
         discriminator.load_weights("disc")
+        print(f"Done!")
     else:
         clear_checkpoint_dir()
 
@@ -205,7 +216,7 @@ def train(generator, discriminator, dataset, epochs, writer):
                 # Save the model every 10 epochs
                 generator.save_weights("gen")
                 discriminator.save_weights("disc")
-                print(f"Checkpoint saved")
+                print(f"Checkpoint saved!")
 
             # Log the time it takes for each epoch
             duration = time.time() - start_time
@@ -258,7 +269,7 @@ BUFFER_SIZE = 60000
 train_dataset = tf.data.Dataset.from_tensor_slices(train_images).shuffle(BUFFER_SIZE).batch(BATCH_SIZE)
 seed = tf.random.normal([num_examples_to_generate, noise_dim])
 
-EPOCHS = 500
+EPOCHS = 5000 # enough to run all night, I hope
 
 summary_writer = tf.summary.create_file_writer(log_dir)
 
