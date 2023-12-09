@@ -28,7 +28,7 @@ noise_dim = 100  # Dimensionality of the noise vector
 gen_complexity = 256
 disc_complexity = 128
 
-gen_learn_rate = 1e-3
+gen_learn_rate = 1e-2
 disc_learn_rate = 1e-5 # lower rate for the discriminator helps generator
 
 def build_generator():
