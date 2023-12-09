@@ -65,12 +65,18 @@ def create_console_space():
 
 def clear_logs_and_checkpoints():
     create_console_space()
-    # Clear TensorBoard logs
+    
+    # Clear TensorBoard logs in the directory
     if os.path.exists(log_dir):
-        shutil.rmtree(log_dir)
+        for file in glob.glob(f'./{log_dir}*'):
+            os.remove(file)
         print(f"Cleared TensorBoard logs in {log_dir}")
     else:
-        print(f"Attempted to clear logs, but one does not exist in: {log_dir}")
+        print(f"Attempted to clear logs, but none exist in: {log_dir}")
+        # create log directory
+        os.makedirs(log_dir, exist_ok=True)
+        os.chmod(log_dir, stat.S_IRWXU | stat.S_IRGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)
+        print(f"Created empty log directory: {log_dir}")
 
     # Clear generator and discriminator checkpoint files
     for file in glob.glob('./gen_epoch_*.index') + glob.glob('./disc_epoch_*.index'):
@@ -85,15 +91,8 @@ def clear_logs_and_checkpoints():
         os.remove("./checkpoint")
         print(f"Removed checkpoint file.")
 
-    # Recreate the log directory
-    os.makedirs(log_dir, exist_ok=True)
-    perms = stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR | stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IWOTH | stat.S_IXOTH
-    os.chmod(log_dir, perms)
-    print(f"Recreated empty log directory: {log_dir}")
-
 num_examples_to_generate = 16  # Number of images to generate for visualization
 noise_dim = 100  # Dimensionality of the noise vector
-
 
 def build_generator():
     model = Sequential([
@@ -280,10 +279,6 @@ def main(reset=False):
     # If reset is True, remove the checkpoints, else load them
     if reset:
         clear_logs_and_checkpoints()
-        if os.path.exists("gen.index"):
-            os.remove("gen.index")
-        if os.path.exists("disc.index"):
-            os.remove("disc.index")
         latest_epoch = None
     if latest_epoch is not None:
         load_model_weights()
