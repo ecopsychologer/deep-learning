@@ -40,15 +40,13 @@ class MiniBatchDiscrimination(Layer):
 # set up checkpoint folder
 # Directory where the checkpoints will be saved
 checkpoint_dir = './training_checkpoints'
-# Name of the checkpoint files
-checkpoint_prefix = os.path.join(checkpoint_dir, "ckpt_{epoch}")
 
 # Ensure checkpoint directory exists
 os.makedirs(checkpoint_dir, exist_ok=True)
 
 # Callback for saving the model's weights
 checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
-    filepath=checkpoint_prefix,
+    filepath=checkpoint_dir,
     save_weights_only=True)
 
 def clear_checkpoint_dir(checkpoint_dir):
@@ -166,19 +164,13 @@ def start_tensorboard(logdir, port=6006):
     print(f"TensorBoard started at {url}")
     
 def load_model_weights_if_exist():
-    # Define patterns for generator and discriminator
-    gen_pattern = "ckpt_*-gen"
-    disc_pattern = "ckpt_*-disc"
-
-    # Find the latest checkpoint for generator and discriminator
-    latest_gen = tf.train.latest_checkpoint(checkpoint_dir, latest_filename=gen_pattern)
-    latest_disc = tf.train.latest_checkpoint(checkpoint_dir, latest_filename=disc_pattern)
-
-    if latest_gen and latest_disc:
-        print(f"Restoring generator from {latest_gen}")
-        generator.load_weights(latest_gen)
-        print(f"Restoring discriminator from {latest_disc}")
-        discriminator.load_weights(latest_disc)
+    if os.path.exists(checkpoint_dir):
+        print(f"Restoring generator")
+        generator.load_weights("gen")
+        print(f"Restoring discriminator")
+        discriminator.load_weights("disc")
+    else:
+        clear_checkpoint_dir()
 
 def train(generator, discriminator, dataset, epochs, writer):
     # Check for the latest checkpoint
@@ -208,15 +200,12 @@ def train(generator, discriminator, dataset, epochs, writer):
 
                 generator_optimizer.apply_gradients(zip(gradients_of_generator, generator.trainable_variables))
                 discriminator_optimizer.apply_gradients(zip(gradients_of_discriminator, discriminator.trainable_variables))
-                
-            # End of epoch
-            if (epoch + 1) % 10 == 0 or epoch == EPOCHS - 1:
+
+            if (epoch % 10) == 0 and epoch != 0:
                 # Save the model every 10 epochs
-                gen_name = f"{checkpoint_prefix}_epoch_{epoch}-gen"
-                generator.save_weights(gen_name)
-                disc_name = f"{checkpoint_prefix}_epoch_{epoch}-disc"
-                discriminator.save_weights(disc_name)
-                print(f"Checkpoint saved at {checkpoint_prefix}_epoch_{epoch}")
+                generator.save_weights("gen")
+                discriminator.save_weights("disc")
+                print(f"Checkpoint saved")
 
             # Log the time it takes for each epoch
             duration = time.time() - start_time
@@ -224,10 +213,11 @@ def train(generator, discriminator, dataset, epochs, writer):
 
             # Log the losses to TensorBoard
             with writer.as_default():
-                tf.summary.scalar('gen_loss', gen_loss, step=epoch)
-                tf.summary.scalar('disc_loss', disc_loss, step=epoch)
+                tf.summary.scalar('generator loss', gen_loss, step=epoch)
+                tf.summary.scalar('discriminator loss', disc_loss, step=epoch)
                 writer.flush()
-            generate_and_save_images(generator, epoch, seed, writer)
+            if (epoch % 5) == 0:
+                generate_and_save_images(generator, epoch, seed, writer)
 
     # Generate after the final epoch
     generate_and_save_images(generator, EPOCHS, seed, writer)
