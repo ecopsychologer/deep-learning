@@ -154,9 +154,9 @@ def plot_to_image(figure):
     image = tf.expand_dims(image, 0)
     return image
 
-def start_tensorboard(logdir, port=6006):
+def start_tensorboard(port=6006):
     tb = TensorBoard()
-    tb.configure(argv=[None, '--logdir', logdir, '--port', str(port)])
+    tb.configure(argv=[None, '--logdir', log_dir, '--port', str(port)])
     url = tb.launch()
     create_console_space()
     print(f"TensorBoard started at {url}")
@@ -286,7 +286,7 @@ def main(reset=False):
     if latest_epoch is not None:
         load_model_weights()
     # start tensorboard
-    start_tensorboard(log_dir)
+    start_tensorboard()
     # start training
     start_epoch = latest_epoch if latest_epoch is not None else 0
     train(generator, discriminator, train_dataset, start_epoch, EPOCHS)
