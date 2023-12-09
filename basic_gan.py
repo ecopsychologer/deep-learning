@@ -68,7 +68,7 @@ BATCH_SIZE = 256
 
 # The noise added to the labels helps to prevent the discriminator from becoming too confident. However, too much noise can destabilize training.
 fake_noise_val = 0.05
-real_noise_val = 0.1
+real_noise_val = 0.15
 
 # lowering disc_confidence can help the generator learn better
 disc_confidence = 0.8
@@ -80,7 +80,7 @@ def build_generator():
         Dense(gen_complexity, activation='relu', input_shape=(100,)),  # 100-dimensional noise
         BatchNormalization(),
         Dense(gen_complexity/2, activation='relu'), # add an additional layer half as complex
-        Dropout(0.4),                               # add dropout
+        Dropout(0.3),                               # add dropout
         Dense(784, activation='sigmoid'),           # Reshape to 28x28 image
         Reshape((28, 28))
     ])
