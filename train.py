@@ -1,6 +1,6 @@
 import tensorflow as tf
-from tensorflow.keras.layers import Dense, Flatten, Reshape, GaussianNoise, BatchNormalization, Dropout, Layer
-from tensorflow.keras import Sequential
+from tensorflow.keras.layers import Dense, Flatten, Reshape, GaussianNoise, BatchNormalization, Dropout, Layer, Input, Concatenate
+from tensorflow.keras import Sequential, Model
 import config, saveNload, time
 
 seed = tf.random.normal([config.NUM_EXAMPLES_TO_GEN, config.NOISE_DIM])
@@ -35,7 +35,7 @@ class MiniBatchDiscrimination(Layer):
         })
         return config
 
-def build_generator():
+"""def build_generator():
     model = Sequential([
         GaussianNoise(0.115, input_shape=(config.NOISE_DIM,)),  # Add noise to input
         Dense(config.GEN_COMPLEXITY, activation='relu', input_shape=(100,)),  # 100-dimensional noise
@@ -45,6 +45,26 @@ def build_generator():
         Dense(784, activation='sigmoid'),           # Reshape to 28x28 image
         Reshape((28, 28))
     ])
+    return model"""
+    
+def build_generator():
+    # Define the input for the input sentence and the latent code
+    input_sentence = Input(shape=(28, 28), name='input_sentence')
+    z = Input(shape=(config.NOISE_DIM,), name='z')
+
+    # Flatten the input sentence to concatenate it with z
+    flat_input = Flatten()(input_sentence)
+    concat = Concatenate()([flat_input, z])
+
+    # Now define the rest of the generator model using the concatenated input
+    x = Dense(config.GEN_COMPLEXITY, activation='relu')(concat)
+    x = BatchNormalization()(x)
+    x = Dropout(0.3)(x)
+    x = Dense(784, activation='sigmoid')(x)
+    x = Reshape((28, 28))(x)
+
+    # Create the model
+    model = Model(inputs=[input_sentence, z], outputs=x)
     return model
 
 def build_discriminator():
