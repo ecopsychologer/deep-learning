@@ -63,7 +63,7 @@ def train(generator, gen_opt, discriminator, disc_opt, start_epoch, writer, lamb
             start_time = time.time()
             for input_sentence in train_dataset:
                 train_step(generator, discriminator, input_sentence, gen_opt, disc_opt, lambda_div, gamma)
-            for image_batch in train_dataset:
+            """for image_batch in train_dataset:
                 noise = tf.random.normal([config.BATCH_SIZE, 100])
 
                 with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
@@ -83,14 +83,14 @@ def train(generator, gen_opt, discriminator, disc_opt, start_epoch, writer, lamb
                 gradients_of_discriminator = disc_tape.gradient(disc_loss, discriminator.trainable_variables)
 
                 gen_opt.apply_gradients(zip(gradients_of_generator, generator.trainable_variables))
-                disc_opt.apply_gradients(zip(gradients_of_discriminator, discriminator.trainable_variables))
+                disc_opt.apply_gradients(zip(gradients_of_discriminator, discriminator.trainable_variables))"""
 
             if (epoch % 10) == 0 and epoch != start_epoch:
                 saveNload.save_model_weights(generator, discriminator, epoch)
 
             # Log the time it takes for each epoch
             duration = time.time() - start_time
-            print(f'Epoch {epoch+1}/{epochs} completed in {duration:.2f} seconds')
+            print(f'Epoch {epoch+1}/{config.EPOCHS} completed in {duration:.2f} seconds')
 
             # Log the losses to TensorBoard
             with writer.as_default():
@@ -101,7 +101,7 @@ def train(generator, gen_opt, discriminator, disc_opt, start_epoch, writer, lamb
                 saveNload.generate_and_save_images(generator, epoch, seed, writer)
 
     # Generate after the final epoch
-    saveNload.generate_and_save_images(generator, epochs, seed, writer)
+    saveNload.generate_and_save_images(generator, config.EPOCHS, seed, writer)
     exit
 
 cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=False)
