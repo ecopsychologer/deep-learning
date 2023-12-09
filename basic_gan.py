@@ -24,12 +24,25 @@ num_examples_to_generate = 16  # Number of images to generate for visualization
 noise_dim = 100  # Dimensionality of the noise vector
 
 ## variables to adjust
-# increased complexity helps it learn
-gen_complexity = 256
-disc_complexity = 128
+# These are the number of units in the dense layers of your generator and discriminator models. Increasing these can give the network more capacity to learn complex patterns, but too much complexity can lead to overfitting or longer training times.
+gen_complexity = 512
+disc_complexity = 256
 
-gen_learn_rate = 1e-2
-disc_learn_rate = 1e-5 # lower rate for the discriminator helps generator
+# These control how quickly the generator and discriminator learn. Too high, and they may overshoot optimal solutions; too low, and they may get stuck or learn very slowly.
+# If the discriminator learns too fast, it may overfit to the current generator's output and not provide useful gradients. If the generator's learning rate is too low in comparison, it may not catch up, leading to poor image quality.
+gen_learn_rate = 0.015
+disc_learn_rate = 0.00013 # lower rate for the discriminator helps generator
+
+# Larger batch sizes provide more stable gradients but may require more memory and computational power. Smaller batches can lead to faster convergence but may be noisier.
+BATCH_SIZE = 256
+
+# The noise added to the labels helps to prevent the discriminator from becoming too confident. However, too much noise can destabilize training.
+fake_noise_val = 0.1
+real_noise_val = 0.3
+
+# lowering disc_confidence can help the generator learn better
+disc_confidence = 0.95
+
 
 def build_generator():
     model = Sequential([
@@ -41,7 +54,7 @@ def build_generator():
 def build_discriminator():
     model = Sequential([
         Flatten(input_shape=(28, 28)),
-        Dense(disc_complexity, activation='relu'),
+        Dense(disc_complexity, activation='LeakyReLU'),
         Dense(1, activation='sigmoid')
     ])
     return model
@@ -131,8 +144,6 @@ def train(generator, discriminator, dataset, epochs, writer):
 
 cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=False)
 
-# lowering disc_confidence can help the generator learn better
-disc_confidence = 0.95
 def discriminator_loss(real_labels, fake_labels, real_output, fake_output):
     real_loss = cross_entropy(real_labels*disc_confidence, real_output)
     fake_loss = cross_entropy(fake_labels, fake_output)
@@ -160,7 +171,7 @@ discriminator_optimizer = tf.keras.optimizers.Adam(disc_learn_rate)
 generator = build_generator()
 discriminator = build_discriminator()
 
-BATCH_SIZE = 256
+
 BUFFER_SIZE = 60000
 
 train_dataset = tf.data.Dataset.from_tensor_slices(train_images).shuffle(BUFFER_SIZE).batch(BATCH_SIZE)
