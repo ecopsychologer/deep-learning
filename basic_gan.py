@@ -82,20 +82,21 @@ def create_console_space():
         print(f"Attempted to clear checkpoint directory, but one does not exist in: {checkpoint_dir}")"""
 
 log_dir = "logs/"
-summary_writer = tf.summary.create_file_writer(log_dir)
-create_console_space()
-# Check if the directory exists
-if os.path.exists(log_dir):
-    # Delete the contents of the directory
-    shutil.rmtree(log_dir)
-    print(f"Cleared TensorBoard logs in {log_dir}")
-else:
-    print(f"Attempted to clear logs, but one does not exist in: {log_dir}")
 
-# Recreate the log directory
-os.makedirs(log_dir, exist_ok=True)
-create_console_space()
-print(f"Recreated empty log directory: {log_dir}")
+def clear_logs():
+    create_console_space()
+    # Check if the directory exists
+    if os.path.exists(log_dir):
+        # Delete the contents of the directory
+        shutil.rmtree(log_dir)
+        print(f"Cleared TensorBoard logs in {log_dir}")
+    else:
+        print(f"Attempted to clear logs, but one does not exist in: {log_dir}")
+
+    # Recreate the log directory
+    os.makedirs(log_dir, exist_ok=True)
+    create_console_space()
+    print(f"Recreated empty log directory: {log_dir}")
 
 num_examples_to_generate = 16  # Number of images to generate for visualization
 noise_dim = 100  # Dimensionality of the noise vector
@@ -191,7 +192,7 @@ def load_model_weights_if_exist():
     else:
         print("Model weights not found, starting from scratch.")
 
-
+summary_writer = tf.summary.create_file_writer(log_dir)
 
 def train(generator, discriminator, dataset, epochs, writer):
     with writer.as_default():
@@ -278,6 +279,7 @@ EPOCHS = 5000 # enough to run all night, I hope
 def main(reset=False):
     # If reset is True, remove the checkpoints, else load them
     if reset:
+        clear_logs()
         if os.path.exists("gen.index"):
             os.remove("gen.index")
         if os.path.exists("disc.index"):
