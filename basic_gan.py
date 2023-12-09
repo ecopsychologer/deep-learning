@@ -44,7 +44,7 @@ def main(reset=False):
     summary_writer = tf.summary.create_file_writer(log_dir)
     # Start training
     start_epoch = latest_epoch if latest_epoch is not None else 0
-    train.train(generator, generator_optimizer, discriminator, discriminator_optimizer, start_epoch, config.EPOCHS, summary_writer)
+    train.train(generator, generator_optimizer, discriminator, discriminator_optimizer, start_epoch, summary_writer)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

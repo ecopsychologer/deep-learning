@@ -57,12 +57,12 @@ def build_discriminator():
     ])
     return model
 
-def train(generator, gen_opt, discriminator, disc_opt, start_epoch, epochs, writer, lambda_div=config.LAMBDA_DIV, gamma=config.GAMMA):
+def train(generator, gen_opt, discriminator, disc_opt, start_epoch, writer, lambda_div=config.LAMBDA_DIV, gamma=config.GAMMA):
     with writer.as_default():
-        for epoch in range(start_epoch, epochs):
+        for epoch in range(start_epoch, config.EPOCHS):
             start_time = time.time()
             for input_sentence in train_dataset:
-                train_step(generator, gen_loss, disc_loss, input_sentence, gen_opt, lambda_div, gamma)
+                train_step(generator, discriminator, input_sentence, gen_opt, disc_opt, lambda_div, gamma)
             for image_batch in train_dataset:
                 noise = tf.random.normal([config.BATCH_SIZE, 100])
 
@@ -158,22 +158,37 @@ def diversity_loss(embeddings, latent_codes, lambda_div):
     div_loss = tf.reduce_mean(div_loss)
     return div_loss
 
-def train_step(generator, gen_loss, disc_loss, input_sentence, optimizer, lambda_div, gamma):
-    # Sample multiple different latent codes
+def train_step(generator, discriminator, input_sentence, gen_opt, disc_opt, lambda_div=config.LAMBDA_DIV, gamma=config.GAMMA):
     batch_size = input_sentence.shape[0]
     k = 3  # Number of different paraphrases to generate
     z_samples = tf.random.normal((batch_size * k, config.NOISE_DIM))
     
-    with tf.GradientTape() as tape:
+    with tf.GradientTape(persistent=True) as tape:
         # Generate paraphrases for each sample of z
         generated_texts = generator([input_sentence, z_samples], training=True)
+        generated_texts = tf.reshape(generated_texts, (batch_size, k, -1))
+        
+        # Discriminator's real and fake decisions
+        real_output = discriminator(input_sentence, training=True)
+        fake_output = discriminator(generated_texts, training=True)
         
         # Calculate the diversity loss
         div_loss = diversity_loss(generated_texts, z_samples, lambda_div)
         
+        # Generator and discriminator loss
+        gen_loss = generator_loss(fake_output)
+        disc_loss = discriminator_loss(real_output, fake_output)
+        
         # Combine the losses
-        total_loss = gen_loss + disc_loss + gamma * div_loss  # gamma is the weight for the diversity loss
+        total_gen_loss = gen_loss + gamma * div_loss  # gamma is the weight for the diversity loss
     
-    # Calculate the gradients and update the weights
-    gradients = tape.gradient(total_loss, generator.trainable_variables)
-    optimizer.apply_gradients(zip(gradients, generator.trainable_variables))
+    # Calculate the gradients and update the weights for the generator
+    gradients_of_generator = tape.gradient(total_gen_loss, generator.trainable_variables)
+    gen_opt.apply_gradients(zip(gradients_of_generator, generator.trainable_variables))
+
+    # Calculate the gradients and update the weights for the discriminator
+    gradients_of_discriminator = tape.gradient(disc_loss, discriminator.trainable_variables)
+    disc_opt.apply_gradients(zip(gradients_of_discriminator, discriminator.trainable_variables))
+    
+    # Delete the persistent tape manually to free the resources
+    del tape
