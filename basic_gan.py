@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from tensorboard.program import TensorBoard
 import os
-import shutil
+import shutil, argparse
 
 class MiniBatchDiscrimination(Layer):
     def __init__(self, num_kernels, kernel_dim, **kwargs):
@@ -36,7 +36,7 @@ class MiniBatchDiscrimination(Layer):
             'kernel_dim': self.kernel_dim
         })
         return config
-    
+
 # set up checkpoint folder
 # Directory where the checkpoints will be saved
 checkpoint_dir = './training_checkpoints'
@@ -50,6 +50,13 @@ os.makedirs(checkpoint_dir, exist_ok=True)
 checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
     filepath=checkpoint_prefix,
     save_weights_only=True)
+
+def clear_checkpoint_dir(checkpoint_dir):
+    if os.path.exists(checkpoint_dir):
+        shutil.rmtree(checkpoint_dir)
+        print(f"Cleared checkpoint directory: {checkpoint_dir}")
+    else:
+        print(f"Checkpoint directory does not exist: {checkpoint_dir}")
 
 log_dir = "logs/"
 # Check if the directory exists
@@ -210,6 +217,7 @@ def train(generator, discriminator, dataset, epochs, writer):
 
     # Generate after the final epoch
     generate_and_save_images(generator, EPOCHS, seed)
+    exit
 
 cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=False)
 
@@ -250,8 +258,22 @@ EPOCHS = 500
 
 summary_writer = tf.summary.create_file_writer(log_dir)
 
-# start tensorboard
-start_tensorboard(log_dir)
-# start training
-train(generator, discriminator, train_dataset, EPOCHS, summary_writer)
 
+def main(reset=False):
+    checkpoint_dir = './training_checkpoints'
+    
+    # If reset is True, clear the checkpoint directory
+    if reset:
+        clear_checkpoint_dir(checkpoint_dir)
+
+    # start tensorboard
+    start_tensorboard(log_dir)
+    # start training
+    train(generator, discriminator, train_dataset, EPOCHS, summary_writer)
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--reset', action='store_true', help='Clear checkpoint directory and start training from scratch')
+    args = parser.parse_args()
+
+    main(reset=args.reset)
