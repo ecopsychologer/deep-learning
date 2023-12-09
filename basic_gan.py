@@ -16,17 +16,12 @@ fake_noise_val = config.FAKE_NOISE_VAL
 real_noise_val = config.REAL_NOISE_VAL
 disc_confidence = config.DISC_CONFIDENCE
 
-#------------------------------------------------------------------------------#
-
-
 def start_tensorboard(logdir, port=6006):
     tb = TensorBoard()
     tb.configure(argv=[None, '--logdir', logdir, '--port', str(port)])
     url = tb.launch()
     config.create_console_space()
     print(f"TensorBoard started at {url}")
-
-train_dataset = tf.data.Dataset.from_tensor_slices(saveNload.train_images).shuffle(config.BUFFER_SIZE).batch(config.BATCH_SIZE)
 
 def main(reset=False):
     latest_epoch = saveNload.find_latest_epoch()
@@ -49,7 +44,7 @@ def main(reset=False):
     summary_writer = tf.summary.create_file_writer(log_dir)
     # Start training
     start_epoch = latest_epoch if latest_epoch is not None else 0
-    train.train(generator, generator_optimizer, discriminator, discriminator_optimizer, train_dataset, start_epoch, config.EPOCHS, summary_writer)
+    train.train(generator, generator_optimizer, discriminator, discriminator_optimizer, start_epoch, config.EPOCHS, summary_writer)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

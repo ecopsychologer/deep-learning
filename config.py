@@ -12,6 +12,9 @@ REAL_NOISE_VAL = 0.15
 # lowering disc_confidence can help the generator learn better
 DISC_CONFIDENCE = 0.8
 
+LAMBDA_DIV = 0.9
+GAMMA = 0.6
+
 
 """ Requires a Reset """
 # These are the number of units in the dense layers of your generator and discriminator models. Increasing these can give the network more capacity to learn complex patterns, but too much complexity can lead to overfitting or longer training times.

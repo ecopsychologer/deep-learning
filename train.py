@@ -4,6 +4,7 @@ from tensorflow.keras import Sequential
 import config, saveNload, time
 
 seed = tf.random.normal([config.NUM_EXAMPLES_TO_GEN, config.NOISE_DIM])
+train_dataset = tf.data.Dataset.from_tensor_slices(saveNload.train_images).shuffle(config.BUFFER_SIZE).batch(config.BATCH_SIZE)
 
 class MiniBatchDiscrimination(Layer):
     def __init__(self, num_kernels, kernel_dim, **kwargs):
@@ -34,7 +35,6 @@ class MiniBatchDiscrimination(Layer):
         })
         return config
 
-
 def build_generator():
     model = Sequential([
         GaussianNoise(0.115, input_shape=(config.NOISE_DIM,)),  # Add noise to input
@@ -57,11 +57,13 @@ def build_discriminator():
     ])
     return model
 
-def train(generator, gen_opt, discriminator, disc_opt, dataset, start_epoch, epochs, writer):
+def train(generator, gen_opt, discriminator, disc_opt, start_epoch, epochs, writer, lambda_div=config.LAMBDA_DIV, gamma=config.GAMMA):
     with writer.as_default():
         for epoch in range(start_epoch, epochs):
             start_time = time.time()
-            for image_batch in dataset:
+            for input_sentence in train_dataset:
+                train_step(generator, gen_loss, disc_loss, input_sentence, gen_opt, lambda_div, gamma)
+            for image_batch in train_dataset:
                 noise = tf.random.normal([config.BATCH_SIZE, 100])
 
                 with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
@@ -122,3 +124,56 @@ def discriminator_loss(real_output, fake_output, real_label_noise, fake_label_no
 
 def generator_loss(fake_output):
     return cross_entropy(tf.ones_like(fake_output), fake_output)
+
+def pairwise_distances(embeddings, squared=False):
+    # Calculate the pairwise distance matrix
+    dot_product = tf.matmul(embeddings, tf.transpose(embeddings))
+    square_norm = tf.linalg.diag_part(dot_product)
+    distances = tf.expand_dims(square_norm, 0) - 2.0 * dot_product + tf.expand_dims(square_norm, 1)
+    
+    # Because of computation errors, some distances might be negative so we put everything >= 0.0
+    distances = tf.maximum(distances, 0.0)
+    if not squared:
+        # Because the gradient of sqrt is infinite when distances == 0.0 (ex: on the diagonal)
+        # we need to add a small epsilon where distances == 0.0
+        mask = tf.cast(tf.equal(distances, 0.0), tf.float32)
+        distances = distances + mask * 1e-16
+
+        distances = tf.sqrt(distances)
+
+        # Correct the epsilon added: set the distances on the mask to be exactly 0.0
+        distances = distances * (1.0 - mask)
+
+    return distances
+
+def diversity_loss(embeddings, latent_codes, lambda_div):
+    pairwise_emb_distances = pairwise_distances(embeddings)
+    pairwise_latent_distances = pairwise_distances(latent_codes)
+    
+    # Avoid division by zero
+    pairwise_latent_distances += 1e-8
+    
+    ratios = pairwise_emb_distances / pairwise_latent_distances
+    div_loss = tf.maximum(lambda_div - ratios, 0)
+    div_loss = tf.reduce_mean(div_loss)
+    return div_loss
+
+def train_step(generator, gen_loss, disc_loss, input_sentence, optimizer, lambda_div, gamma):
+    # Sample multiple different latent codes
+    batch_size = input_sentence.shape[0]
+    k = 3  # Number of different paraphrases to generate
+    z_samples = tf.random.normal((batch_size * k, config.NOISE_DIM))
+    
+    with tf.GradientTape() as tape:
+        # Generate paraphrases for each sample of z
+        generated_texts = generator([input_sentence, z_samples], training=True)
+        
+        # Calculate the diversity loss
+        div_loss = diversity_loss(generated_texts, z_samples, lambda_div)
+        
+        # Combine the losses
+        total_loss = gen_loss + disc_loss + gamma * div_loss  # gamma is the weight for the diversity loss
+    
+    # Calculate the gradients and update the weights
+    gradients = tape.gradient(total_loss, generator.trainable_variables)
+    optimizer.apply_gradients(zip(gradients, generator.trainable_variables))
