@@ -77,6 +77,25 @@ def clear_logs():
     create_console_space()
     print(f"Recreated empty log directory: {log_dir}")
 
+def clear_old_checkpoints(keep_last_n):
+    # Get all generator and discriminator checkpoint files
+    gen_files = sorted(glob.glob('./gen_epoch_*.index'))
+    disc_files = sorted(glob.glob('./disc_epoch_*.index'))
+
+    # Extract epoch numbers and pair index and data files
+    gen_checkpoints = [(int(file.split('_epoch_')[1].split('.')[0]), file, file.replace('.index', '.data-00000-of-00001')) for file in gen_files]
+    disc_checkpoints = [(int(file.split('_epoch_')[1].split('.')[0]), file, file.replace('.index', '.data-00000-of-00001')) for file in disc_files]
+
+    # Sort by epoch number and keep the last n checkpoints
+    gen_checkpoints.sort(key=lambda x: x[0], reverse=True)
+    disc_checkpoints.sort(key=lambda x: x[0], reverse=True)
+    
+    # Remove older checkpoints beyond the last n
+    for _, index_file, data_file in gen_checkpoints[keep_last_n:] + disc_checkpoints[keep_last_n:]:
+        os.remove(index_file)
+        os.remove(data_file)
+        print(f"Removed old checkpoint files: {index_file} and {data_file}")
+
 num_examples_to_generate = 16  # Number of images to generate for visualization
 noise_dim = 100  # Dimensionality of the noise vector
 
@@ -183,13 +202,9 @@ def load_model_weights():
 
 summary_writer = tf.summary.create_file_writer(log_dir)
 
-def train(generator, discriminator, dataset, epochs, writer):
-    latest_epoch = find_latest_epoch()
-    epoch = 0
-    if latest_epoch is not None:
-        epoch = latest_epoch
+def train(generator, discriminator, dataset, start_epoch, epochs, writer):
     with writer.as_default():
-        for epoch in range(epochs):
+        for epoch in range(start_epoch, epochs):
             start_time = time.time()
             for image_batch in dataset:
                 noise = tf.random.normal([BATCH_SIZE, 100])
@@ -215,6 +230,7 @@ def train(generator, discriminator, dataset, epochs, writer):
 
             if (epoch % 10) == 0 and epoch != 0:
                 save_model_weights(epoch)
+                clear_old_checkpoints(2)
 
             # Log the time it takes for each epoch
             duration = time.time() - start_time
@@ -280,10 +296,11 @@ def main(reset=False):
     else:
         load_model_weights()
 
+    latest_epoch = find_latest_epoch()
     # start tensorboard
     start_tensorboard(log_dir)
     # start training
-    train(generator, discriminator, train_dataset, EPOCHS, summary_writer)
+    train(generator, discriminator, train_dataset, latest_epoch if latest_epoch is not None else 0, EPOCHS, summary_writer)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
