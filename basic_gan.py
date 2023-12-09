@@ -23,9 +23,13 @@ print(f"Recreated empty log directory: {log_dir}")
 num_examples_to_generate = 16  # Number of images to generate for visualization
 noise_dim = 100  # Dimensionality of the noise vector
 
+## variables to adjust
 # increased complexity helps it learn
 gen_complexity = 256
 disc_complexity = 128
+
+gen_learn_rate = 1e-3
+disc_learn_rate = 1e-5 # lower rate for the discriminator helps generator
 
 def build_generator():
     model = Sequential([
@@ -128,7 +132,7 @@ def train(generator, discriminator, dataset, epochs, writer):
 cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=False)
 
 # lowering disc_confidence can help the generator learn better
-disc_confidence = 0.94
+disc_confidence = 0.95
 def discriminator_loss(real_labels, fake_labels, real_output, fake_output):
     real_loss = cross_entropy(real_labels*disc_confidence, real_output)
     fake_loss = cross_entropy(fake_labels, fake_output)
@@ -150,9 +154,7 @@ def discriminator_loss(real_output, fake_output, real_label_noise, fake_label_no
 def generator_loss(fake_output):
     return cross_entropy(tf.ones_like(fake_output), fake_output)
 
-gen_learn_rate = 1e-4
 generator_optimizer = tf.keras.optimizers.Adam(gen_learn_rate)
-disc_learn_rate = 1e-5 # lower rate for the discriminator helps generator
 discriminator_optimizer = tf.keras.optimizers.Adam(disc_learn_rate)
 
 generator = build_generator()
