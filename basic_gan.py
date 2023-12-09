@@ -54,7 +54,7 @@ def clear_checkpoint_dir():
         shutil.rmtree(checkpoint_dir)
         print(f"Cleared checkpoint directory: {checkpoint_dir}")
     else:
-        print(f"Checkpoint directory does not exist: {checkpoint_dir}")
+        print(f"Attempted to clear checkpoint directory, but one does not exist in: {checkpoint_dir}")
 
 log_dir = "logs/"
 # Check if the directory exists
@@ -63,7 +63,7 @@ if os.path.exists(log_dir):
     shutil.rmtree(log_dir)
     print(f"Cleared TensorBoard logs in {log_dir}")
 else:
-    print(f"Directory {log_dir} does not exist.")
+    print(f"Attempted to clear logs, but one does not exist in: {log_dir}")
 
 # Recreate the log directory
 os.makedirs(log_dir, exist_ok=True)
