@@ -191,8 +191,8 @@ def load_model_weights():
 
 summary_writer = tf.summary.create_file_writer(log_dir)
 
-def train(generator, discriminator, dataset, start_epoch, epochs, writer):
-    with writer.as_default():
+def train(generator, discriminator, dataset, start_epoch, epochs):
+    with summary_writer.as_default():
         for epoch in range(start_epoch, epochs):
             start_time = time.time()
             for image_batch in dataset:
@@ -225,15 +225,15 @@ def train(generator, discriminator, dataset, start_epoch, epochs, writer):
             print(f'Epoch {epoch+1}/{epochs} completed in {duration:.2f} seconds')
 
             # Log the losses to TensorBoard
-            with writer.as_default():
+            with summary_writer.as_default():
                 tf.summary.scalar('Generator Loss', gen_loss, step=epoch)
                 tf.summary.scalar('Discriminator Loss', disc_loss, step=epoch)
-                writer.flush()
+                summary_writer.flush()
             if (epoch % 5) == 0:
-                generate_and_save_images(generator, epoch, seed, writer)
+                generate_and_save_images(generator, epoch, seed, summary_writer)
 
     # Generate after the final epoch
-    generate_and_save_images(generator, EPOCHS, seed, writer)
+    generate_and_save_images(generator, EPOCHS, seed, summary_writer)
     exit
 
 cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=False)
@@ -283,15 +283,13 @@ def main(reset=False):
         if os.path.exists("disc.index"):
             os.remove("disc.index")
         latest_epoch = None
-    else:
-        if latest_epoch is not None:
-            load_model_weights()
-
+    if latest_epoch is not None:
+        load_model_weights()
     # start tensorboard
     start_tensorboard(log_dir)
     # start training
     start_epoch = latest_epoch if latest_epoch is not None else 0
-    train(generator, discriminator, train_dataset, start_epoch, EPOCHS, summary_writer)
+    train(generator, discriminator, train_dataset, start_epoch, EPOCHS)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
