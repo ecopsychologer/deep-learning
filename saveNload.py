@@ -1,6 +1,6 @@
 import tensorflow as tf
 import matplotlib.pyplot as plt
-import glob, re, config, os
+import glob, re, config, os, stat
 
 def load_data():
     (train_images, _), (_, _) = tf.keras.datasets.mnist.load_data()
@@ -71,7 +71,7 @@ def load_model_weights(gen, disc):
         
 def clear_logs_and_checkpoints():
     config.create_console_space()
-    
+    log_dir = config.LOG_DIR
     # Clear TensorBoard logs in the directory
     if os.path.exists(log_dir):
         for file in glob.glob(f'./{log_dir}*'):
