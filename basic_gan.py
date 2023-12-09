@@ -11,6 +11,12 @@ import shutil, argparse, time, os, glob, re
 gen_complexity = 500
 disc_complexity = 120
 
+# Define the paths for saving weights
+gen_weights_path = "./gen"
+disc_weights_path = "./disc"
+# Log Path
+log_dir = "logs/"
+
 """ values below do NOT require a reset """
 # These control how quickly the generator and discriminator learn. Too high, and they may overshoot optimal solutions; too low, and they may get stuck or learn very slowly.
 # If the discriminator learns too fast, it may overfit to the current generator's output and not provide useful gradients. If the generator's learning rate is too low in comparison, it may not catch up, leading to poor image quality.
@@ -57,8 +63,6 @@ def create_console_space():
     print(f"")
     print(f"\\**********||=+=||**********//")
 
-log_dir = "logs/"
-
 def clear_logs_and_checkpoints():
     create_console_space()
     # Clear TensorBoard logs
@@ -79,44 +83,11 @@ def clear_logs_and_checkpoints():
     # Clear Checkpoint file
     if os.path.exists("./checkpoint"):
         os.remove("./checkpoint")
+        print(f"Removed checkpoint file.")
 
     # Recreate the log directory
     os.makedirs(log_dir, exist_ok=True)
     print(f"Recreated empty log directory: {log_dir}")
-
-"""def clear_logs():
-    create_console_space()
-    # Check if the directory exists
-    if os.path.exists(log_dir):
-        # Delete the contents of the directory
-        shutil.rmtree(log_dir)
-        print(f"Cleared TensorBoard logs in {log_dir}")
-    else:
-        print(f"Attempted to clear logs, but one does not exist in: {log_dir}")
-
-    # Recreate the log directory
-    os.makedirs(log_dir, exist_ok=True)
-    create_console_space()
-    print(f"Recreated empty log directory: {log_dir}")
-
-def clear_old_checkpoints(keep_last_n=3):
-    # Get all generator and discriminator checkpoint files
-    gen_files = sorted(glob.glob('./gen_epoch_*.index'))
-    disc_files = sorted(glob.glob('./disc_epoch_*.index'))
-
-    # Extract epoch numbers and pair index and data files
-    gen_checkpoints = [(int(file.split('_epoch_')[1].split('.')[0]), file, file.replace('.index', '.data-00000-of-00001')) for file in gen_files]
-    disc_checkpoints = [(int(file.split('_epoch_')[1].split('.')[0]), file, file.replace('.index', '.data-00000-of-00001')) for file in disc_files]
-
-    # Sort by epoch number and keep the last n checkpoints
-    gen_checkpoints.sort(key=lambda x: x[0], reverse=True)
-    disc_checkpoints.sort(key=lambda x: x[0], reverse=True)
-    
-    # Remove older checkpoints beyond the last n
-    for _, index_file, data_file in gen_checkpoints[keep_last_n:] + disc_checkpoints[keep_last_n:]:
-        os.remove(index_file)
-        os.remove(data_file)
-        print(f"Removed old checkpoint files: {index_file} and {data_file}")"""
 
 num_examples_to_generate = 16  # Number of images to generate for visualization
 noise_dim = 100  # Dimensionality of the noise vector
@@ -189,10 +160,6 @@ def start_tensorboard(logdir, port=6006):
     url = tb.launch()
     create_console_space()
     print(f"TensorBoard started at {url}")
-    
-# Define the paths for saving weights
-gen_weights_path = "./gen"
-disc_weights_path = "./disc"
 
 def find_latest_epoch():
     gen_files = glob.glob('./gen_epoch_*.index')
