@@ -169,17 +169,29 @@ def start_tensorboard(logdir, port=6006):
     create_console_space()
     print(f"TensorBoard started at {url}")
     
+# Define the paths for saving weights
+gen_weights_path = "./gen"
+disc_weights_path = "./disc"
+
+def save_model_weights():
+    # Save the model every 10 epochs
+    generator.save_weights(gen_weights_path)
+    discriminator.save_weights(disc_weights_path)
+    print(f"Checkpoint saved!")
+
 def load_model_weights_if_exist():
-    #if os.path.exists(checkpoint_dir):
     create_console_space()
-    print(f"Restoring generator...")
-    generator.load_weights("gen")
-    print(f"Done!")
-    print(f"Restoring discriminator...")
-    discriminator.load_weights("disc")
-    print(f"Done!")
-    #else:
-    #    clear_checkpoint_dir()
+    if os.path.exists(gen_weights_path + ".index") and os.path.exists(disc_weights_path + ".index"):
+        print(f"Restoring generator...")
+        generator.load_weights(gen_weights_path)
+        print(f"Done!")
+        print(f"Restoring discriminator...")
+        discriminator.load_weights(disc_weights_path)
+        print(f"Done!")
+    else:
+        print("Model weights not found, starting from scratch.")
+
+
 
 def train(generator, discriminator, dataset, epochs, writer):
     with writer.as_default():
@@ -208,10 +220,7 @@ def train(generator, discriminator, dataset, epochs, writer):
                 discriminator_optimizer.apply_gradients(zip(gradients_of_discriminator, discriminator.trainable_variables))
 
             if (epoch % 10) == 0 and epoch != 0:
-                # Save the model every 10 epochs
-                generator.save_weights("gen")
-                discriminator.save_weights("disc")
-                print(f"Checkpoint saved!")
+                save_model_weights()
 
             # Log the time it takes for each epoch
             duration = time.time() - start_time
