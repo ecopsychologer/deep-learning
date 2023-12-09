@@ -183,9 +183,6 @@ def load_model_weights_if_exist():
     #    clear_checkpoint_dir()
 
 def train(generator, discriminator, dataset, epochs, writer):
-    # Check for the latest checkpoint
-    load_model_weights_if_exist()
-        
     with writer.as_default():
         for epoch in range(epochs):
             start_time = time.time()
@@ -274,10 +271,12 @@ summary_writer = tf.summary.create_file_writer(log_dir)
 
 
 def main(reset=False):
-    # If reset is True, clear the checkpoint directory
+    # If reset is True, remove the checkpoints, else load them
     if reset:
         os.remove("gen.index")
         os.remove("disc.index")
+    else:
+        load_model_weights_if_exist()
 
     # start tensorboard
     start_tensorboard(log_dir)
