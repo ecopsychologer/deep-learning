@@ -1,6 +1,6 @@
 import tensorflow as tf
 import matplotlib.pyplot as plt
-import glob, re, config
+import glob, re, config, os
 
 def load_data():
     (train_images, _), (_, _) = tf.keras.datasets.mnist.load_data()
