@@ -273,8 +273,10 @@ summary_writer = tf.summary.create_file_writer(log_dir)
 def main(reset=False):
     # If reset is True, remove the checkpoints, else load them
     if reset:
-        os.remove("gen.index")
-        os.remove("disc.index")
+        if os.path.exists("gen.index"):
+            os.remove("gen.index")
+        if os.path.exists("disc.index"):
+            os.remove("disc.index")
     else:
         load_model_weights_if_exist()
 
