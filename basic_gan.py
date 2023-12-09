@@ -82,6 +82,7 @@ def create_console_space():
         print(f"Attempted to clear checkpoint directory, but one does not exist in: {checkpoint_dir}")"""
 
 log_dir = "logs/"
+summary_writer = tf.summary.create_file_writer(log_dir)
 create_console_space()
 # Check if the directory exists
 if os.path.exists(log_dir):
@@ -160,8 +161,6 @@ def plot_to_image(figure):
     # Add the batch dimension
     image = tf.expand_dims(image, 0)
     return image
-
-summary_writer = tf.summary.create_file_writer(log_dir)
 
 def start_tensorboard(logdir, port=6006):
     tb = TensorBoard()
@@ -266,9 +265,6 @@ train_dataset = tf.data.Dataset.from_tensor_slices(train_images).shuffle(BUFFER_
 seed = tf.random.normal([num_examples_to_generate, noise_dim])
 
 EPOCHS = 5000 # enough to run all night, I hope
-
-summary_writer = tf.summary.create_file_writer(log_dir)
-
 
 def main(reset=False):
     # If reset is True, remove the checkpoints, else load them
