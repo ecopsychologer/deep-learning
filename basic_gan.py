@@ -55,7 +55,7 @@ noise_dim = 100  # Dimensionality of the noise vector
 
 ## variables to adjust
 # These are the number of units in the dense layers of your generator and discriminator models. Increasing these can give the network more capacity to learn complex patterns, but too much complexity can lead to overfitting or longer training times.
-gen_complexity = 444
+gen_complexity = 500
 disc_complexity = 111
 
 # These control how quickly the generator and discriminator learn. Too high, and they may overshoot optimal solutions; too low, and they may get stuck or learn very slowly.
@@ -65,7 +65,7 @@ disc_learn_rate = 0.00015 # lower rate for the discriminator helps generator
 
 # Larger batch sizes provide more stable gradients but may require more memory and computational power. Smaller batches can lead to faster convergence but may be noisier.
 # This means smaller batches may increase diversity
-BATCH_SIZE = 200
+BATCH_SIZE = 180
 
 # The noise added to the labels helps to prevent the discriminator from becoming too confident. However, too much noise can destabilize training.
 fake_noise_val = 0.05
@@ -80,7 +80,7 @@ def build_generator():
         GaussianNoise(0.115, input_shape=(noise_dim,)),  # Add noise to input
         Dense(gen_complexity, activation='LeakyReLU', input_shape=(100,)),  # 100-dimensional noise
         BatchNormalization(),
-        Dense(gen_complexity/2, activation='relu'), # add an additional layer half as complex
+        # Dense(gen_complexity/2, activation='relu'), # add an additional layer half as complex
         Dropout(0.3),                               # add dropout
         Dense(784, activation='sigmoid'),           # Reshape to 28x28 image
         Reshape((28, 28))
