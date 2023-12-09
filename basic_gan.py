@@ -4,12 +4,26 @@ from tensorflow.keras import Sequential
 import numpy as np
 import matplotlib.pyplot as plt
 from tensorboard.program import TensorBoard
+import os
+import glob
+
+def clear_old_images(folder_path='.', extension='png'):
+    # Find all .png files in the specified folder
+    files = glob.glob(os.path.join(folder_path, f'*.{extension}'))
+    for f in files:
+        try:
+            os.remove(f)
+            print(f"Deleted {f}")
+        except OSError as e:
+            print(f"Error: {e.strerror}")
 
 num_examples_to_generate = 16  # Number of images to generate for visualization
 noise_dim = 100  # Dimensionality of the noise vector
 
 # increased complexity helps it learn
 gen_complexity = 256
+build_complexity = 128
+
 def build_generator():
     model = Sequential([
         Dense(gen_complexity, activation='relu', input_shape=(100,)),  # 100-dimensional noise
@@ -17,11 +31,10 @@ def build_generator():
         Reshape((28, 28))
     ])
     return model
-
 def build_discriminator():
     model = Sequential([
         Flatten(input_shape=(28, 28)),
-        Dense(128, activation='relu'),
+        Dense(build_complexity, activation='relu'),
         Dense(1, activation='sigmoid')
     ])
     return model
@@ -87,9 +100,15 @@ def train(generator, discriminator, dataset, epochs, writer):
 
                     real_output = discriminator(image_batch, training=True)
                     fake_output = discriminator(generated_images, training=True)
+                    
+                    # Adding noise to labels
+                    real_label_noise = tf.random.uniform(shape=tf.shape(real_output), minval=0.0, maxval=0.3)
+                    fake_label_noise = tf.random.uniform(shape=tf.shape(fake_output), minval=0.0, maxval=0.3)
+                    noisy_real_labels = tf.ones_like(real_output) - real_label_noise
+                    noisy_fake_labels = tf.zeros_like(fake_output) + fake_label_noise
 
                     gen_loss = generator_loss(fake_output)
-                    disc_loss = discriminator_loss(real_output, fake_output)
+                    disc_loss = discriminator_loss(noisy_real_labels, noisy_fake_labels)
 
                 gradients_of_generator = gen_tape.gradient(gen_loss, generator.trainable_variables)
                 gradients_of_discriminator = disc_tape.gradient(disc_loss, discriminator.trainable_variables)
@@ -101,7 +120,7 @@ def train(generator, discriminator, dataset, epochs, writer):
                     tf.summary.scalar('gen_loss', gen_loss, step=epoch)
                     tf.summary.scalar('disc_loss', disc_loss, step=epoch)
             # Save the model every few epochs
-            if (epoch + 1) % 50 == 0 or epoch == EPOCHS - 1:
+            if (epoch + 1) % 25 == 0 or epoch == EPOCHS - 1:
                 generate_and_save_images(generator, epoch + 1, seed, writer)
 
     # Generate after the final epoch
@@ -138,6 +157,8 @@ EPOCHS = 1000
 
 summary_writer = tf.summary.create_file_writer(log_dir)
 
+# clean pics
+clear_old_images()
 # start tensorboard
 start_tensorboard(log_dir)
 # start training
