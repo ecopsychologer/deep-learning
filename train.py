@@ -38,7 +38,7 @@ class MiniBatchDiscrimination(Layer):
 def build_generator():
     model = Sequential([
         GaussianNoise(0.115, input_shape=(config.NOISE_DIM,)),  # Add noise to input
-        Dense(gen_complexity, activation='relu', input_shape=(100,)),  # 100-dimensional noise
+        Dense(config.GEN_COMPLEXITY, activation='relu', input_shape=(100,)),  # 100-dimensional noise
         BatchNormalization(),
         # Dense(gen_complexity/2, activation='relu'), # add an additional layer half as complex
         Dropout(0.3),                               # add dropout
@@ -50,7 +50,7 @@ def build_generator():
 def build_discriminator():
     model = Sequential([
         Flatten(input_shape=(28, 28)),
-        Dense(disc_complexity, activation='LeakyReLU'),
+        Dense(config.DISC_COMPLEXITY, activation='LeakyReLU'),
         Dropout(0.4),  # Add dropout
         MiniBatchDiscrimination(num_kernels=50, kernel_dim=5),
         Dense(1, activation='sigmoid')
