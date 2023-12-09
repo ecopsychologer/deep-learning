@@ -60,18 +60,18 @@ disc_complexity = 128
 
 # These control how quickly the generator and discriminator learn. Too high, and they may overshoot optimal solutions; too low, and they may get stuck or learn very slowly.
 # If the discriminator learns too fast, it may overfit to the current generator's output and not provide useful gradients. If the generator's learning rate is too low in comparison, it may not catch up, leading to poor image quality.
-gen_learn_rate = 0.0013
-disc_learn_rate = 0.00017 # lower rate for the discriminator helps generator
+gen_learn_rate = 0.0015
+disc_learn_rate = 0.00015 # lower rate for the discriminator helps generator
 
 # Larger batch sizes provide more stable gradients but may require more memory and computational power. Smaller batches can lead to faster convergence but may be noisier.
 BATCH_SIZE = 256
 
 # The noise added to the labels helps to prevent the discriminator from becoming too confident. However, too much noise can destabilize training.
-fake_noise_val = 0.1
-real_noise_val = 0.3
+fake_noise_val = 0.05
+real_noise_val = 0.1
 
 # lowering disc_confidence can help the generator learn better
-disc_confidence = 0.9
+disc_confidence = 0.8
 
 
 def build_generator():
