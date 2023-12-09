@@ -8,9 +8,11 @@ from tensorboard.program import TensorBoard
 num_examples_to_generate = 16  # Number of images to generate for visualization
 noise_dim = 100  # Dimensionality of the noise vector
 
+# increased complexity helps it learn
+gen_complexity = 256
 def build_generator():
     model = Sequential([
-        Dense(128, activation='relu', input_shape=(100,)),  # 100-dimensional noise
+        Dense(gen_complexity, activation='relu', input_shape=(100,)),  # 100-dimensional noise
         Dense(784, activation='sigmoid'),  # Reshape to 28x28 image
         Reshape((28, 28))
     ])
@@ -107,8 +109,10 @@ def train(generator, discriminator, dataset, epochs, writer):
 
 cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=False)
 
+# lowering disc_confidence can help the generator learn better
+disc_confidence = 0.9
 def discriminator_loss(real_output, fake_output):
-    real_loss = cross_entropy(tf.ones_like(real_output), real_output)
+    real_loss = cross_entropy(tf.ones_like(real_output)*disc_confidence, real_output)
     fake_loss = cross_entropy(tf.zeros_like(fake_output), fake_output)
     total_loss = real_loss + fake_loss
     return total_loss
@@ -116,8 +120,10 @@ def discriminator_loss(real_output, fake_output):
 def generator_loss(fake_output):
     return cross_entropy(tf.ones_like(fake_output), fake_output)
 
-generator_optimizer = tf.keras.optimizers.Adam(1e-4)
-discriminator_optimizer = tf.keras.optimizers.Adam(1e-4)
+gen_learn_rate = 1e-4
+generator_optimizer = tf.keras.optimizers.Adam(gen_learn_rate)
+disc_learn_rate = 1e-5 # lower rate for the discriminator helps generator
+discriminator_optimizer = tf.keras.optimizers.Adam(disc_learn_rate)
 
 generator = build_generator()
 discriminator = build_discriminator()
