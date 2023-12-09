@@ -1,12 +1,32 @@
 import tensorflow as tf
 from tensorflow.keras.layers import Dense, Flatten, Reshape, GaussianNoise, BatchNormalization, Dropout, Layer
-
 from tensorflow.keras import Sequential
 import numpy as np
 import matplotlib.pyplot as plt
 from tensorboard.program import TensorBoard
 import os
 import shutil, argparse, time
+
+## variables to adjust
+# These are the number of units in the dense layers of your generator and discriminator models. Increasing these can give the network more capacity to learn complex patterns, but too much complexity can lead to overfitting or longer training times.
+gen_complexity = 500
+disc_complexity = 130
+
+# These control how quickly the generator and discriminator learn. Too high, and they may overshoot optimal solutions; too low, and they may get stuck or learn very slowly.
+# If the discriminator learns too fast, it may overfit to the current generator's output and not provide useful gradients. If the generator's learning rate is too low in comparison, it may not catch up, leading to poor image quality.
+gen_learn_rate = 0.0015
+disc_learn_rate = 0.0001 # lower rate for the discriminator helps generator
+
+# Larger batch sizes provide more stable gradients but may require more memory and computational power. Smaller batches can lead to faster convergence but may be noisier.
+# This means smaller batches may increase diversity
+BATCH_SIZE = 180
+
+# The noise added to the labels helps to prevent the discriminator from becoming too confident. However, too much noise can destabilize training.
+fake_noise_val = 0.05
+real_noise_val = 0.15
+
+# lowering disc_confidence can help the generator learn better
+disc_confidence = 0.8
 
 class MiniBatchDiscrimination(Layer):
     def __init__(self, num_kernels, kernel_dim, **kwargs):
@@ -39,7 +59,7 @@ class MiniBatchDiscrimination(Layer):
 
 # set up checkpoint folder
 # Directory where the checkpoints will be saved
-checkpoint_dir = './training_checkpoints'
+"""checkpoint_dir = './training_checkpoints'
 
 # Ensure checkpoint directory exists
 os.makedirs(checkpoint_dir, exist_ok=True)
@@ -47,19 +67,19 @@ os.makedirs(checkpoint_dir, exist_ok=True)
 # Callback for saving the model's weights
 checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
     filepath=checkpoint_dir,
-    save_weights_only=True)
+    save_weights_only=True)"""
 
 def create_console_space():
     print(f"")
     print(f"\\**********||=+=||**********//")
 
-def clear_checkpoint_dir():
+"""def clear_checkpoint_dir():
     create_console_space()
     if os.path.exists(checkpoint_dir):
         shutil.rmtree(checkpoint_dir)
         print(f"Cleared checkpoint directory: {checkpoint_dir}")
     else:
-        print(f"Attempted to clear checkpoint directory, but one does not exist in: {checkpoint_dir}")
+        print(f"Attempted to clear checkpoint directory, but one does not exist in: {checkpoint_dir}")"""
 
 log_dir = "logs/"
 create_console_space()
@@ -78,27 +98,6 @@ print(f"Recreated empty log directory: {log_dir}")
 
 num_examples_to_generate = 16  # Number of images to generate for visualization
 noise_dim = 100  # Dimensionality of the noise vector
-
-## variables to adjust
-# These are the number of units in the dense layers of your generator and discriminator models. Increasing these can give the network more capacity to learn complex patterns, but too much complexity can lead to overfitting or longer training times.
-gen_complexity = 500
-disc_complexity = 111
-
-# These control how quickly the generator and discriminator learn. Too high, and they may overshoot optimal solutions; too low, and they may get stuck or learn very slowly.
-# If the discriminator learns too fast, it may overfit to the current generator's output and not provide useful gradients. If the generator's learning rate is too low in comparison, it may not catch up, leading to poor image quality.
-gen_learn_rate = 0.0015
-disc_learn_rate = 0.0001 # lower rate for the discriminator helps generator
-
-# Larger batch sizes provide more stable gradients but may require more memory and computational power. Smaller batches can lead to faster convergence but may be noisier.
-# This means smaller batches may increase diversity
-BATCH_SIZE = 180
-
-# The noise added to the labels helps to prevent the discriminator from becoming too confident. However, too much noise can destabilize training.
-fake_noise_val = 0.05
-real_noise_val = 0.15
-
-# lowering disc_confidence can help the generator learn better
-disc_confidence = 0.8
 
 
 def build_generator():
@@ -172,16 +171,16 @@ def start_tensorboard(logdir, port=6006):
     print(f"TensorBoard started at {url}")
     
 def load_model_weights_if_exist():
-    if os.path.exists(checkpoint_dir):
-        create_console_space()
-        print(f"Restoring generator...")
-        generator.load_weights("gen")
-        print(f"Done!")
-        print(f"Restoring discriminator...")
-        discriminator.load_weights("disc")
-        print(f"Done!")
-    else:
-        clear_checkpoint_dir()
+    #if os.path.exists(checkpoint_dir):
+    create_console_space()
+    print(f"Restoring generator...")
+    generator.load_weights("gen")
+    print(f"Done!")
+    print(f"Restoring discriminator...")
+    discriminator.load_weights("disc")
+    print(f"Done!")
+    #else:
+    #    clear_checkpoint_dir()
 
 def train(generator, discriminator, dataset, epochs, writer):
     # Check for the latest checkpoint
@@ -277,7 +276,8 @@ summary_writer = tf.summary.create_file_writer(log_dir)
 def main(reset=False):
     # If reset is True, clear the checkpoint directory
     if reset:
-        clear_checkpoint_dir()
+        os.remove("gen.*")
+        os.remove("disc.*")
 
     # start tensorboard
     start_tensorboard(log_dir)
