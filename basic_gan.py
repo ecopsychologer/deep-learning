@@ -4,7 +4,7 @@ from tensorflow.keras import Sequential
 import numpy as np
 import matplotlib.pyplot as plt
 from tensorboard.program import TensorBoard
-import shutil, argparse, time, os, glob, re
+import shutil, argparse, time, os, glob, re, stat
 
 """ variables to adjust """
 # These are the number of units in the dense layers of your generator and discriminator models. Increasing these can give the network more capacity to learn complex patterns, but too much complexity can lead to overfitting or longer training times.
@@ -87,6 +87,8 @@ def clear_logs_and_checkpoints():
 
     # Recreate the log directory
     os.makedirs(log_dir, exist_ok=True)
+    perms = stat.S_IWUSR and stat.S_IWGRP and stat.S_IWOTH
+    os.chmod(log_dir, perms)
     print(f"Recreated empty log directory: {log_dir}")
 
 num_examples_to_generate = 16  # Number of images to generate for visualization
@@ -272,11 +274,13 @@ train_dataset = tf.data.Dataset.from_tensor_slices(train_images).shuffle(BUFFER_
 seed = tf.random.normal([num_examples_to_generate, noise_dim])
 
 EPOCHS = 5000 # enough to run all night, I hope
+hail_mary = True
 
 def main(reset=False):
     latest_epoch = find_latest_epoch()
     # If reset is True, remove the checkpoints, else load them
-    if reset:
+    if reset and hail_mary:
+        hail_mary = False
         clear_logs_and_checkpoints()
         if os.path.exists("gen.index"):
             os.remove("gen.index")
