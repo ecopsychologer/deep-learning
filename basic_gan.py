@@ -49,7 +49,7 @@ checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
     filepath=checkpoint_dir,
     save_weights_only=True)
 
-def clear_checkpoint_dir(checkpoint_dir):
+def clear_checkpoint_dir():
     if os.path.exists(checkpoint_dir):
         shutil.rmtree(checkpoint_dir)
         print(f"Cleared checkpoint directory: {checkpoint_dir}")
