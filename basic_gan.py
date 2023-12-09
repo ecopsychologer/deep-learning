@@ -215,9 +215,10 @@ def train(generator, discriminator, dataset, epochs, writer):
                 tf.summary.scalar('gen_loss', gen_loss, step=epoch)
                 tf.summary.scalar('disc_loss', disc_loss, step=epoch)
                 writer.flush()
+            generate_and_save_images(generator, epoch, seed, writer)
 
     # Generate after the final epoch
-    generate_and_save_images(generator, EPOCHS, seed)
+    generate_and_save_images(generator, EPOCHS, seed, writer)
     exit
 
 cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=False)
