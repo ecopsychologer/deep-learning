@@ -168,8 +168,6 @@ EPOCHS = 500
 
 summary_writer = tf.summary.create_file_writer(log_dir)
 
-# clean pics
-clear_old_images()
 # start tensorboard
 start_tensorboard(log_dir)
 # start training
