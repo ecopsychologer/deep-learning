@@ -64,7 +64,8 @@ gen_learn_rate = 0.0015
 disc_learn_rate = 0.00015 # lower rate for the discriminator helps generator
 
 # Larger batch sizes provide more stable gradients but may require more memory and computational power. Smaller batches can lead to faster convergence but may be noisier.
-BATCH_SIZE = 256
+# This means smaller batches may increase diversity
+BATCH_SIZE = 200
 
 # The noise added to the labels helps to prevent the discriminator from becoming too confident. However, too much noise can destabilize training.
 fake_noise_val = 0.05
@@ -76,8 +77,8 @@ disc_confidence = 0.8
 
 def build_generator():
     model = Sequential([
-        GaussianNoise(0.1, input_shape=(noise_dim,)),  # Add noise to input
-        Dense(gen_complexity, activation='relu', input_shape=(100,)),  # 100-dimensional noise
+        GaussianNoise(0.13, input_shape=(noise_dim,)),  # Add noise to input
+        Dense(gen_complexity, activation='LeakyReLU', input_shape=(100,)),  # 100-dimensional noise
         BatchNormalization(),
         Dense(gen_complexity/2, activation='relu'), # add an additional layer half as complex
         Dropout(0.3),                               # add dropout
