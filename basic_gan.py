@@ -65,7 +65,7 @@ disc_learn_rate = 0.00015 # lower rate for the discriminator helps generator
 
 # Larger batch sizes provide more stable gradients but may require more memory and computational power. Smaller batches can lead to faster convergence but may be noisier.
 # This means smaller batches may increase diversity
-BATCH_SIZE = 222
+BATCH_SIZE = 200
 
 # The noise added to the labels helps to prevent the discriminator from becoming too confident. However, too much noise can destabilize training.
 fake_noise_val = 0.05
