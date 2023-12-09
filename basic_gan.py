@@ -177,7 +177,7 @@ def load_model_weights_if_exist():
         print(f"Restoring generator...")
         generator.load_weights("gen")
         print(f"Done!")
-        print(f"Restoring discriminator")
+        print(f"Restoring discriminator...")
         discriminator.load_weights("disc")
         print(f"Done!")
     else:
@@ -224,8 +224,8 @@ def train(generator, discriminator, dataset, epochs, writer):
 
             # Log the losses to TensorBoard
             with writer.as_default():
-                tf.summary.scalar('generator loss', gen_loss, step=epoch)
-                tf.summary.scalar('discriminator loss', disc_loss, step=epoch)
+                tf.summary.scalar('Generator Loss', gen_loss, step=epoch)
+                tf.summary.scalar('Discriminator Loss', disc_loss, step=epoch)
                 writer.flush()
             if (epoch % 5) == 0:
                 generate_and_save_images(generator, epoch, seed, writer)
