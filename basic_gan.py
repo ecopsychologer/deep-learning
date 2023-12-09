@@ -72,7 +72,7 @@ def clear_logs_and_checkpoints():
     else:
         print(f"Attempted to clear logs, but one does not exist in: {log_dir}")
 
-    # Clear checkpoints
+    # Clear generator and discriminator checkpoint files
     for file in glob.glob('./gen_epoch_*.index') + glob.glob('./disc_epoch_*.index'):
         os.remove(file)
         data_file = file.replace('.index', '.data-00000-of-00001')
@@ -274,6 +274,7 @@ seed = tf.random.normal([num_examples_to_generate, noise_dim])
 EPOCHS = 5000 # enough to run all night, I hope
 
 def main(reset=False):
+    latest_epoch = find_latest_epoch()
     # If reset is True, remove the checkpoints, else load them
     if reset:
         clear_logs_and_checkpoints()
@@ -281,14 +282,16 @@ def main(reset=False):
             os.remove("gen.index")
         if os.path.exists("disc.index"):
             os.remove("disc.index")
+        latest_epoch = None
     else:
-        load_model_weights()
+        if latest_epoch is not None:
+            load_model_weights()
 
-    latest_epoch = find_latest_epoch()
     # start tensorboard
     start_tensorboard(log_dir)
     # start training
-    train(generator, discriminator, train_dataset, latest_epoch if latest_epoch is not None else 0, EPOCHS, summary_writer)
+    start_epoch = latest_epoch if latest_epoch is not None else 0
+    train(generator, discriminator, train_dataset, start_epoch, EPOCHS, summary_writer)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
