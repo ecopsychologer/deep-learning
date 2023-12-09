@@ -1,5 +1,6 @@
 import tensorflow as tf
-from tensorflow.keras.layers import Dense, Flatten, Reshape
+from tensorflow.keras.layers import Dense, Flatten, Reshape, GaussianNoise, BatchNormalization, Dropout
+
 from tensorflow.keras import Sequential
 import numpy as np
 import matplotlib.pyplot as plt
@@ -46,7 +47,10 @@ disc_confidence = 0.95
 
 def build_generator():
     model = Sequential([
+        GaussianNoise(0.1, input_shape=(noise_dim,)),  # Add noise to input
         Dense(gen_complexity, activation='relu', input_shape=(100,)),  # 100-dimensional noise
+        BatchNormalization(),
+        Dense(gen_complexity, activation='relu'), # add an additional layer
         Dense(784, activation='sigmoid'),  # Reshape to 28x28 image
         Reshape((28, 28))
     ])
@@ -55,6 +59,7 @@ def build_discriminator():
     model = Sequential([
         Flatten(input_shape=(28, 28)),
         Dense(disc_complexity, activation='LeakyReLU'),
+        Dropout(0.4),  # Add dropout
         Dense(1, activation='sigmoid')
     ])
     return model
