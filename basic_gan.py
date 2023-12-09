@@ -5,17 +5,20 @@ import numpy as np
 import matplotlib.pyplot as plt
 from tensorboard.program import TensorBoard
 import os
-import glob
+import shutil
 
-def clear_old_images(folder_path='.', extension='png'):
-    # Find all .png files in the specified folder
-    files = glob.glob(os.path.join(folder_path, f'*.{extension}'))
-    for f in files:
-        try:
-            os.remove(f)
-            print(f"Deleted {f}")
-        except OSError as e:
-            print(f"Error: {e.strerror}")
+log_dir = "logs/"
+# Check if the directory exists
+if os.path.exists(log_dir):
+    # Delete the contents of the directory
+    shutil.rmtree(log_dir)
+    print(f"Cleared TensorBoard logs in {log_dir}")
+else:
+    print(f"Directory {log_dir} does not exist.")
+
+# Recreate the log directory
+os.makedirs(log_dir, exist_ok=True)
+print(f"Recreated empty log directory: {log_dir}")
 
 num_examples_to_generate = 16  # Number of images to generate for visualization
 noise_dim = 100  # Dimensionality of the noise vector
@@ -79,8 +82,6 @@ def plot_to_image(figure):
     image = tf.expand_dims(image, 0)
     return image
 
-
-log_dir = "logs/"
 summary_writer = tf.summary.create_file_writer(log_dir)
 
 def start_tensorboard(logdir, port=6006):
