@@ -36,6 +36,20 @@ class MiniBatchDiscrimination(Layer):
             'kernel_dim': self.kernel_dim
         })
         return config
+    
+# set up checkpoint folder
+# Directory where the checkpoints will be saved
+checkpoint_dir = './training_checkpoints'
+# Name of the checkpoint files
+checkpoint_prefix = os.path.join(checkpoint_dir, "ckpt_{epoch}")
+
+# Ensure checkpoint directory exists
+os.makedirs(checkpoint_dir, exist_ok=True)
+
+# Callback for saving the model's weights
+checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
+    filepath=checkpoint_prefix,
+    save_weights_only=True)
 
 log_dir = "logs/"
 # Check if the directory exists
@@ -145,6 +159,13 @@ def start_tensorboard(logdir, port=6006):
     print(f"TensorBoard started at {url}")
 
 def train(generator, discriminator, dataset, epochs, writer):
+    # Check for the latest checkpoint
+    latest = tf.train.latest_checkpoint(checkpoint_dir)
+    if latest:
+        print(f"Restoring from {latest}")
+        generator.load_weights(latest)
+        discriminator.load_weights(latest)
+        
     with writer.as_default():
         for epoch in range(epochs):
             for image_batch in dataset:
@@ -175,6 +196,12 @@ def train(generator, discriminator, dataset, epochs, writer):
                 # Save the model every few epochs
                 if (epoch % 5) == 0:
                     generate_and_save_images(generator, epoch, seed, writer)
+                if (epoch % 20) == 0:
+                    checkpoint_callback.set_model(generator)
+                    generator.save_weights(checkpoint_prefix.format(epoch=epoch))
+                    checkpoint_callback.set_model(discriminator)
+                    discriminator.save_weights(checkpoint_prefix.format(epoch=epoch))
+                    print(f"Checkpoint saved at {checkpoint_prefix.format(epoch=epoch)}")
 
     # Generate after the final epoch
     generate_and_save_images(generator, EPOCHS, seed)
