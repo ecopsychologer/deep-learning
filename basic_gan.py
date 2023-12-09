@@ -169,24 +169,24 @@ def find_latest_epoch():
     epochs = [int(re.search(r'gen_epoch_(\d+).index', file).group(1)) for file in gen_files]
     return max(epochs) if epochs else None
 
-def save_model_weights(epoch):
+def save_model_weights(gen, disc, epoch):
     create_console_space()
     gen_weights_path = f"./gen_epoch_{epoch}"
     disc_weights_path = f"./disc_epoch_{epoch}"
-    generator.save_weights(gen_weights_path)
-    discriminator.save_weights(disc_weights_path)
+    gen.save_weights(gen_weights_path)
+    disc.save_weights(disc_weights_path)
     print(f"Checkpoint saved for epoch {epoch}")
 
-def load_model_weights():
+def load_model_weights(gen, disc):
     create_console_space()
     latest_epoch = find_latest_epoch()
     if latest_epoch is not None:
         gen_weights_path = f"./gen_epoch_{latest_epoch}"
         disc_weights_path = f"./disc_epoch_{latest_epoch}"
         print(f"Restoring generator from {gen_weights_path}")
-        generator.load_weights(gen_weights_path)
+        gen.load_weights(gen_weights_path)
         print(f"Restoring discriminator from {disc_weights_path}")
-        discriminator.load_weights(disc_weights_path)
+        disc.load_weights(disc_weights_path)
         print(f"Model weights restored from epoch {latest_epoch}")
     else:
         print("No saved model weights found, starting from scratch.")
@@ -220,7 +220,7 @@ def train(generator, gen_opt, discriminator, disc_opt, dataset, start_epoch, epo
                 disc_opt.apply_gradients(zip(gradients_of_discriminator, discriminator.trainable_variables))
 
             if (epoch % 10) == 0 and epoch != start_epoch:
-                save_model_weights(epoch)
+                save_model_weights(generator, discriminator, epoch)
 
             # Log the time it takes for each epoch
             duration = time.time() - start_time
@@ -273,12 +273,13 @@ def main(reset=False):
     if reset:
         clear_logs_and_checkpoints()
         latest_epoch = None
-    if latest_epoch is not None:
-        load_model_weights()
     
-    # Initialize models and optimizers
+    # Initialize models
     generator = build_generator()
     discriminator = build_discriminator()
+    # Load if a checkpoint is available
+    if latest_epoch is not None:
+        load_model_weights(generator, discriminator)
     generator_optimizer = tf.keras.optimizers.Adam(gen_learn_rate)
     discriminator_optimizer = tf.keras.optimizers.Adam(disc_learn_rate)
 
