@@ -4,8 +4,7 @@ from tensorflow.keras import Sequential
 import numpy as np
 import matplotlib.pyplot as plt
 from tensorboard.program import TensorBoard
-import os
-import shutil, argparse, time
+import shutil, argparse, time, os, glob, re
 
 ## variables to adjust
 # These are the number of units in the dense layers of your generator and discriminator models. Increasing these can give the network more capacity to learn complex patterns, but too much complexity can lead to overfitting or longer training times.
@@ -57,29 +56,9 @@ class MiniBatchDiscrimination(Layer):
         })
         return config
 
-# set up checkpoint folder
-# Directory where the checkpoints will be saved
-"""checkpoint_dir = './training_checkpoints'
-
-# Ensure checkpoint directory exists
-os.makedirs(checkpoint_dir, exist_ok=True)
-
-# Callback for saving the model's weights
-checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
-    filepath=checkpoint_dir,
-    save_weights_only=True)"""
-
 def create_console_space():
     print(f"")
     print(f"\\**********||=+=||**********//")
-
-"""def clear_checkpoint_dir():
-    create_console_space()
-    if os.path.exists(checkpoint_dir):
-        shutil.rmtree(checkpoint_dir)
-        print(f"Cleared checkpoint directory: {checkpoint_dir}")
-    else:
-        print(f"Attempted to clear checkpoint directory, but one does not exist in: {checkpoint_dir}")"""
 
 log_dir = "logs/"
 
@@ -174,23 +153,31 @@ def start_tensorboard(logdir, port=6006):
 gen_weights_path = "./gen"
 disc_weights_path = "./disc"
 
-def save_model_weights():
-    # Save the model every 10 epochs
+def find_latest_epoch():
+    gen_files = glob.glob('./gen_epoch_*.index')
+    epochs = [int(re.search(r'gen_epoch_(\d+).index', file).group(1)) for file in gen_files]
+    return max(epochs) if epochs else None
+
+def save_model_weights(epoch):
+    gen_weights_path = f"./gen_epoch_{epoch}"
+    disc_weights_path = f"./disc_epoch_{epoch}"
     generator.save_weights(gen_weights_path)
     discriminator.save_weights(disc_weights_path)
-    print(f"Checkpoint saved!")
+    print(f"Checkpoint saved for epoch {epoch}")
 
-def load_model_weights_if_exist():
-    create_console_space()
-    if os.path.exists(gen_weights_path + ".index") and os.path.exists(disc_weights_path + ".index"):
-        print(f"Restoring generator...")
+def load_model_weights():
+    latest_epoch = find_latest_epoch()
+    if latest_epoch is not None:
+        gen_weights_path = f"./gen_epoch_{latest_epoch}"
+        disc_weights_path = f"./disc_epoch_{latest_epoch}"
+        print(f"Restoring generator from {gen_weights_path}")
         generator.load_weights(gen_weights_path)
-        print(f"Done!")
-        print(f"Restoring discriminator...")
+        print(f"Restoring discriminator from {disc_weights_path}")
         discriminator.load_weights(disc_weights_path)
-        print(f"Done!")
+        print(f"Model weights restored from epoch {latest_epoch}")
     else:
-        print("Model weights not found, starting from scratch.")
+        print("No saved model weights found, starting from scratch.")
+
 
 summary_writer = tf.summary.create_file_writer(log_dir)
 
@@ -221,7 +208,7 @@ def train(generator, discriminator, dataset, epochs, writer):
                 discriminator_optimizer.apply_gradients(zip(gradients_of_discriminator, discriminator.trainable_variables))
 
             if (epoch % 10) == 0 and epoch != 0:
-                save_model_weights()
+                save_model_weights(epoch)
 
             # Log the time it takes for each epoch
             duration = time.time() - start_time
@@ -285,7 +272,7 @@ def main(reset=False):
         if os.path.exists("disc.index"):
             os.remove("disc.index")
     else:
-        load_model_weights_if_exist()
+        load_model_weights()
 
     # start tensorboard
     start_tensorboard(log_dir)
