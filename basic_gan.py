@@ -156,7 +156,7 @@ def plot_to_image(figure):
 
 def start_tensorboard(port=6006):
     tb = TensorBoard()
-    tb.configure(argv=[None, '--logdir', log_dir, '--port', str(port)])
+    tb.configure(argv=[None, '--logdir', str(log_dir), '--port', str(port)])
     url = tb.launch()
     create_console_space()
     print(f"TensorBoard started at {url}")
