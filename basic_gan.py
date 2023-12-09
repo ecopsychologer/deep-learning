@@ -190,18 +190,23 @@ def train(generator, discriminator, dataset, epochs, writer):
                 generator_optimizer.apply_gradients(zip(gradients_of_generator, generator.trainable_variables))
                 discriminator_optimizer.apply_gradients(zip(gradients_of_discriminator, discriminator.trainable_variables))
                 
-                with tf.summary.record_if(True):
-                    tf.summary.scalar('gen_loss', gen_loss, step=epoch)
-                    tf.summary.scalar('disc_loss', disc_loss, step=epoch)
-                # Save the model every few epochs
-                if (epoch % 5) == 0:
-                    generate_and_save_images(generator, epoch, seed, writer)
-                if (epoch % 20) == 0:
-                    checkpoint_callback.set_model(generator)
-                    generator.save_weights(checkpoint_prefix.format(epoch=epoch))
-                    checkpoint_callback.set_model(discriminator)
-                    discriminator.save_weights(checkpoint_prefix.format(epoch=epoch))
-                    print(f"Checkpoint saved at {checkpoint_prefix.format(epoch=epoch)}")
+            # End of epoch
+            if (epoch + 1) % 10 == 0 or epoch == EPOCHS - 1:
+                # Save the model every 10 epochs
+                checkpoint_name = f"{checkpoint_prefix}_epoch_{epoch}"
+                generator.save_weights(checkpoint_name)
+                discriminator.save_weights(checkpoint_name)
+                print(f"Checkpoint saved at {checkpoint_name}")
+
+            # Log the time it takes for each epoch
+            duration = time.time() - start_time
+            print(f'Epoch {epoch+1}/{epochs} completed in {duration:.2f} seconds')
+
+            # Log the losses to TensorBoard
+            with writer.as_default():
+                tf.summary.scalar('gen_loss', gen_loss, step=epoch)
+                tf.summary.scalar('disc_loss', disc_loss, step=epoch)
+                writer.flush()
 
     # Generate after the final epoch
     generate_and_save_images(generator, EPOCHS, seed)
