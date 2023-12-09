@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from tensorboard.program import TensorBoard
 import os
-import shutil, argparse
+import shutil, argparse, time
 
 class MiniBatchDiscrimination(Layer):
     def __init__(self, num_kernels, kernel_dim, **kwargs):
@@ -175,6 +175,7 @@ def train(generator, discriminator, dataset, epochs, writer):
         
     with writer.as_default():
         for epoch in range(epochs):
+            start_time = time.time()
             for image_batch in dataset:
                 noise = tf.random.normal([BATCH_SIZE, 100])
 
