@@ -108,7 +108,7 @@ def train(generator, discriminator, dataset, epochs, writer):
                     noisy_fake_labels = tf.zeros_like(fake_output) + fake_label_noise
 
                     gen_loss = generator_loss(fake_output)
-                    disc_loss = discriminator_loss(noisy_real_labels, noisy_fake_labels)
+                    disc_loss = discriminator_loss(noisy_real_labels, noisy_fake_labels, real_label_noise, fake_label_noise)
 
                 gradients_of_generator = gen_tape.gradient(gen_loss, generator.trainable_variables)
                 gradients_of_discriminator = disc_tape.gradient(disc_loss, discriminator.trainable_variables)
@@ -130,11 +130,12 @@ cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=False)
 
 # lowering disc_confidence can help the generator learn better
 disc_confidence = 0.9
-def discriminator_loss(real_output, fake_output):
-    real_loss = cross_entropy(tf.ones_like(real_output)*disc_confidence, real_output)
-    fake_loss = cross_entropy(tf.zeros_like(fake_output), fake_output)
+def discriminator_loss(real_labels, fake_labels, real_output, fake_output):
+    real_loss = cross_entropy(real_labels*disc_confidence, real_output)
+    fake_loss = cross_entropy(fake_labels, fake_output)
     total_loss = real_loss + fake_loss
     return total_loss
+
 
 def generator_loss(fake_output):
     return cross_entropy(tf.ones_like(fake_output), fake_output)
