@@ -59,7 +59,28 @@ def create_console_space():
 
 log_dir = "logs/"
 
-def clear_logs():
+def clear_logs_and_checkpoints():
+    create_console_space()
+    # Clear TensorBoard logs
+    if os.path.exists(log_dir):
+        shutil.rmtree(log_dir)
+        print(f"Cleared TensorBoard logs in {log_dir}")
+    else:
+        print(f"Attempted to clear logs, but one does not exist in: {log_dir}")
+
+    # Clear checkpoints
+    for file in glob.glob('./gen_epoch_*.index') + glob.glob('./disc_epoch_*.index'):
+        os.remove(file)
+        data_file = file.replace('.index', '.data-00000-of-00001')
+        if os.path.exists(data_file):
+            os.remove(data_file)
+        print(f"Removed checkpoint file: {file} and {data_file}")
+
+    # Recreate the log directory
+    os.makedirs(log_dir, exist_ok=True)
+    print(f"Recreated empty log directory: {log_dir}")
+
+"""def clear_logs():
     create_console_space()
     # Check if the directory exists
     if os.path.exists(log_dir):
@@ -74,7 +95,7 @@ def clear_logs():
     create_console_space()
     print(f"Recreated empty log directory: {log_dir}")
 
-def clear_old_checkpoints(keep_last_n):
+def clear_old_checkpoints(keep_last_n=3):
     # Get all generator and discriminator checkpoint files
     gen_files = sorted(glob.glob('./gen_epoch_*.index'))
     disc_files = sorted(glob.glob('./disc_epoch_*.index'))
@@ -91,7 +112,7 @@ def clear_old_checkpoints(keep_last_n):
     for _, index_file, data_file in gen_checkpoints[keep_last_n:] + disc_checkpoints[keep_last_n:]:
         os.remove(index_file)
         os.remove(data_file)
-        print(f"Removed old checkpoint files: {index_file} and {data_file}")
+        print(f"Removed old checkpoint files: {index_file} and {data_file}")"""
 
 num_examples_to_generate = 16  # Number of images to generate for visualization
 noise_dim = 100  # Dimensionality of the noise vector
@@ -227,7 +248,6 @@ def train(generator, discriminator, dataset, start_epoch, epochs, writer):
 
             if (epoch % 10) == 0 and epoch != start_epoch:
                 save_model_weights(epoch)
-                clear_old_checkpoints(2)
 
             # Log the time it takes for each epoch
             duration = time.time() - start_time
@@ -285,7 +305,7 @@ EPOCHS = 5000 # enough to run all night, I hope
 def main(reset=False):
     # If reset is True, remove the checkpoints, else load them
     if reset:
-        clear_logs()
+        clear_logs_and_checkpoints()
         if os.path.exists("gen.index"):
             os.remove("gen.index")
         if os.path.exists("disc.index"):
