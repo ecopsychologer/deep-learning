@@ -1,10 +1,9 @@
 import tensorflow as tf
 from tensorflow.keras.layers import Dense, Flatten, Reshape, GaussianNoise, BatchNormalization, Dropout, Layer
 from tensorflow.keras import Sequential
-import numpy as np
 import matplotlib.pyplot as plt
 from tensorboard.program import TensorBoard
-import shutil, argparse, time, os, glob, re, stat
+import argparse, time, os, glob, re, stat
 
 """ variables to adjust """
 # These are the number of units in the dense layers of your generator and discriminator models. Increasing these can give the network more capacity to learn complex patterns, but too much complexity can lead to overfitting or longer training times.
@@ -30,6 +29,7 @@ real_noise_val = 0.15
 # lowering disc_confidence can help the generator learn better
 disc_confidence = 0.8
 
+#------------------------------------------------------------------------------#
 class MiniBatchDiscrimination(Layer):
     def __init__(self, num_kernels, kernel_dim, **kwargs):
         super(MiniBatchDiscrimination, self).__init__(**kwargs)
@@ -90,7 +90,8 @@ def clear_logs_and_checkpoints():
     if os.path.exists("./checkpoint"):
         os.remove("./checkpoint")
         print(f"Removed checkpoint file.")
-
+        
+#------------------------------------------------------------------------------#
 num_examples_to_generate = 16  # Number of images to generate for visualization
 noise_dim = 100  # Dimensionality of the noise vector
 
@@ -114,7 +115,7 @@ def build_discriminator():
         Dense(1, activation='sigmoid')
     ])
     return model
-
+#------------------------------------------------------------------------------#
 def load_data():
     (train_images, _), (_, _) = tf.keras.datasets.mnist.load_data()
     # Normalize the images to [-1, 1]
@@ -154,14 +155,15 @@ def plot_to_image(figure):
     # Add the batch dimension
     image = tf.expand_dims(image, 0)
     return image
-
-def start_tensorboard(port=6006):
+#------------------------------------------------------------------------------#
+def start_tensorboard(logdir, port=6006):
     tb = TensorBoard()
-    tb.configure(argv=[None, '--logdir', str(log_dir), '--port', str(port)])
+    tb.configure(argv=[None, '--logdir', logdir, '--port', str(port)])
     url = tb.launch()
     create_console_space()
     print(f"TensorBoard started at {url}")
 
+#------------------------------------------------------------------------------#
 def find_latest_epoch():
     gen_files = glob.glob('./gen_epoch_*.index')
     epochs = [int(re.search(r'gen_epoch_(\d+).index', file).group(1)) for file in gen_files]
@@ -190,10 +192,9 @@ def load_model_weights():
         print("No saved model weights found, starting from scratch.")
 
 
-summary_writer = tf.summary.create_file_writer(log_dir)
-
-def train(generator, discriminator, dataset, start_epoch, epochs):
-    with summary_writer.as_default():
+#----------------------------- train.py -----------------------------#
+def train(generator, gen_opt, discriminator, disc_opt, dataset, start_epoch, epochs, writer):
+    with writer.as_default():
         for epoch in range(start_epoch, epochs):
             start_time = time.time()
             for image_batch in dataset:
@@ -215,8 +216,8 @@ def train(generator, discriminator, dataset, start_epoch, epochs):
                 gradients_of_generator = gen_tape.gradient(gen_loss, generator.trainable_variables)
                 gradients_of_discriminator = disc_tape.gradient(disc_loss, discriminator.trainable_variables)
 
-                generator_optimizer.apply_gradients(zip(gradients_of_generator, generator.trainable_variables))
-                discriminator_optimizer.apply_gradients(zip(gradients_of_discriminator, discriminator.trainable_variables))
+                gen_opt.apply_gradients(zip(gradients_of_generator, generator.trainable_variables))
+                disc_opt.apply_gradients(zip(gradients_of_discriminator, discriminator.trainable_variables))
 
             if (epoch % 10) == 0 and epoch != start_epoch:
                 save_model_weights(epoch)
@@ -226,15 +227,15 @@ def train(generator, discriminator, dataset, start_epoch, epochs):
             print(f'Epoch {epoch+1}/{epochs} completed in {duration:.2f} seconds')
 
             # Log the losses to TensorBoard
-            with summary_writer.as_default():
+            with writer.as_default():
                 tf.summary.scalar('Generator Loss', gen_loss, step=epoch)
                 tf.summary.scalar('Discriminator Loss', disc_loss, step=epoch)
-                summary_writer.flush()
+                writer.flush()
             if (epoch % 5) == 0:
-                generate_and_save_images(generator, epoch, seed, summary_writer)
+                generate_and_save_images(generator, epoch, seed, writer)
 
     # Generate after the final epoch
-    generate_and_save_images(generator, EPOCHS, seed, summary_writer)
+    generate_and_save_images(generator, epochs, seed, writer)
     exit
 
 cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=False)
@@ -255,17 +256,9 @@ def discriminator_loss(real_output, fake_output, real_label_noise, fake_label_no
     total_loss = real_loss + fake_loss
     return total_loss
 
-
-
 def generator_loss(fake_output):
     return cross_entropy(tf.ones_like(fake_output), fake_output)
-
-generator_optimizer = tf.keras.optimizers.Adam(gen_learn_rate)
-discriminator_optimizer = tf.keras.optimizers.Adam(disc_learn_rate)
-
-generator = build_generator()
-discriminator = build_discriminator()
-
+#------------------------------------------------------------------------------#
 
 BUFFER_SIZE = 60000
 
@@ -282,11 +275,19 @@ def main(reset=False):
         latest_epoch = None
     if latest_epoch is not None:
         load_model_weights()
-    # start tensorboard
-    start_tensorboard()
-    # start training
+    
+    # Initialize models and optimizers
+    generator = build_generator()
+    discriminator = build_discriminator()
+    generator_optimizer = tf.keras.optimizers.Adam(gen_learn_rate)
+    discriminator_optimizer = tf.keras.optimizers.Adam(disc_learn_rate)
+
+    # Start tensorboard
+    start_tensorboard(log_dir)
+    summary_writer = tf.summary.create_file_writer(log_dir)
+    # Start training
     start_epoch = latest_epoch if latest_epoch is not None else 0
-    train(generator, discriminator, train_dataset, start_epoch, EPOCHS)
+    train(generator, generator_optimizer, discriminator, discriminator_optimizer, train_dataset, start_epoch, EPOCHS, summary_writer)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
