@@ -30,7 +30,7 @@ disc_complexity = 200
 
 # These control how quickly the generator and discriminator learn. Too high, and they may overshoot optimal solutions; too low, and they may get stuck or learn very slowly.
 # If the discriminator learns too fast, it may overfit to the current generator's output and not provide useful gradients. If the generator's learning rate is too low in comparison, it may not catch up, leading to poor image quality.
-gen_learn_rate = 0.00013
+gen_learn_rate = 0.0013
 disc_learn_rate = 0.00017 # lower rate for the discriminator helps generator
 
 # Larger batch sizes provide more stable gradients but may require more memory and computational power. Smaller batches can lead to faster convergence but may be noisier.
