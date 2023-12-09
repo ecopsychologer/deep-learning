@@ -276,8 +276,8 @@ summary_writer = tf.summary.create_file_writer(log_dir)
 def main(reset=False):
     # If reset is True, clear the checkpoint directory
     if reset:
-        os.remove("gen.*")
-        os.remove("disc.*")
+        os.remove("gen.index")
+        os.remove("disc.index")
 
     # start tensorboard
     start_tensorboard(log_dir)
