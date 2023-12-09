@@ -75,6 +75,10 @@ def clear_logs_and_checkpoints():
         if os.path.exists(data_file):
             os.remove(data_file)
         print(f"Removed checkpoint file: {file} and {data_file}")
+        
+    # Clear Checkpoint file
+    if os.path.exists("./checkpoint"):
+        os.remove("./checkpoint")
 
     # Recreate the log directory
     os.makedirs(log_dir, exist_ok=True)
