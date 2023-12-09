@@ -50,8 +50,9 @@ def build_generator():
         GaussianNoise(0.1, input_shape=(noise_dim,)),  # Add noise to input
         Dense(gen_complexity, activation='relu', input_shape=(100,)),  # 100-dimensional noise
         BatchNormalization(),
-        Dense(gen_complexity, activation='relu'), # add an additional layer
-        Dense(784, activation='sigmoid'),  # Reshape to 28x28 image
+        Dense(gen_complexity, activation='relu'),   # add an additional layer
+        Dropout(0.4),                               # add dropout
+        Dense(784, activation='sigmoid'),           # Reshape to 28x28 image
         Reshape((28, 28))
     ])
     return model
