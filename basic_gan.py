@@ -264,11 +264,9 @@ summary_writer = tf.summary.create_file_writer(log_dir)
 
 
 def main(reset=False):
-    checkpoint_dir = './training_checkpoints'
-    
     # If reset is True, clear the checkpoint directory
     if reset:
-        clear_checkpoint_dir(checkpoint_dir)
+        clear_checkpoint_dir()
 
     # start tensorboard
     start_tensorboard(log_dir)
