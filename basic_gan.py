@@ -225,7 +225,7 @@ def train(generator, discriminator, dataset, start_epoch, epochs, writer):
                 generator_optimizer.apply_gradients(zip(gradients_of_generator, generator.trainable_variables))
                 discriminator_optimizer.apply_gradients(zip(gradients_of_discriminator, discriminator.trainable_variables))
 
-            if (epoch % 10) == 0 and epoch != 0:
+            if (epoch % 10) == 0 and epoch != start_epoch:
                 save_model_weights(epoch)
                 clear_old_checkpoints(2)
 
