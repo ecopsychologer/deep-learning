@@ -42,7 +42,7 @@ fake_noise_val = 0.1
 real_noise_val = 0.3
 
 # lowering disc_confidence can help the generator learn better
-disc_confidence = 0.95
+disc_confidence = 0.9
 
 
 def build_generator():
