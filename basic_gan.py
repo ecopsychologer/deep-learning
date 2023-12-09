@@ -159,6 +159,7 @@ def find_latest_epoch():
     return max(epochs) if epochs else None
 
 def save_model_weights(epoch):
+    create_console_space()
     gen_weights_path = f"./gen_epoch_{epoch}"
     disc_weights_path = f"./disc_epoch_{epoch}"
     generator.save_weights(gen_weights_path)
@@ -166,6 +167,7 @@ def save_model_weights(epoch):
     print(f"Checkpoint saved for epoch {epoch}")
 
 def load_model_weights():
+    create_console_space()
     latest_epoch = find_latest_epoch()
     if latest_epoch is not None:
         gen_weights_path = f"./gen_epoch_{latest_epoch}"
