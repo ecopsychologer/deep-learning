@@ -100,7 +100,7 @@ noise_dim = 100  # Dimensionality of the noise vector
 def build_generator():
     model = Sequential([
         GaussianNoise(0.115, input_shape=(noise_dim,)),  # Add noise to input
-        Dense(gen_complexity, activation='LeakyReLU', input_shape=(100,)),  # 100-dimensional noise
+        Dense(gen_complexity, activation='relu', input_shape=(100,)),  # 100-dimensional noise
         BatchNormalization(),
         # Dense(gen_complexity/2, activation='relu'), # add an additional layer half as complex
         Dropout(0.3),                               # add dropout
