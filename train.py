@@ -106,6 +106,9 @@ def train(generator, discriminator, dataset, start_epoch, writer):
         for epoch in range(start_epoch, config.EPOCHS):
             start_time = time.time()
             for image_batch in dataset:
+                # Ensure consistent batch size for the last batch
+                if image_batch.shape[0] != config.BATCH_SIZE:
+                    continue  # Skip the last incomplete batch
                 noise = tf.random.normal([config.BATCH_SIZE, config.NOISE_DIM])
                 
                 with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
@@ -121,6 +124,10 @@ def train(generator, discriminator, dataset, start_epoch, writer):
                     # Get feature representations
                     real_features = feature_extractor(image_batch)
                     fake_features = feature_extractor(generated_images)
+                    
+                    # Debug: print shapes
+                    print("Real features shape:", real_features.shape)
+                    print("Fake features shape:", fake_features.shape)
                     
                     # Calculate feature matching loss
                     feature_loss = tf.reduce_mean(tf.abs(real_features - fake_features))
