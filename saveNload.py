@@ -56,7 +56,7 @@ def save_model_weights(gen, disc, epoch, writer):
     print(f"Checkpoint saved for epoch {epoch}")
     print("\n")
     name = "Checkpoint"
-    text = "Checkpoint  " + str(epoch+1) +"/" + config.EPOCHS/config.CHECKPOINT_INTERVAL + " completed."
+    text = "Checkpoint  " + str(epoch+1) +"/" + str(config.EPOCHS/config.CHECKPOINT_INTERVAL) + " completed."
     train.log_to_tensorboard(writer, name, text, epoch)
 
 def load_model_weights(gen, disc):

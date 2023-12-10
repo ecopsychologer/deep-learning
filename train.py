@@ -95,7 +95,7 @@ def train(generator, gen_opt, discriminator, disc_opt, dataset, start_epoch, epo
             duration = time.time() - start_time
             print(f'Epoch {epoch+1}/{config.EPOCHS} completed in {duration:.2f} seconds')
             name = "Epoch Status"
-            text = "Epoch " + str(epoch+1) +"/" + config.EPOCHS + " completed in " + duration + " seconds"
+            text = "Epoch " + str(epoch+1) +"/" + str(config.EPOCHS) + " completed in " + str(duration) + " seconds"
             log_to_tensorboard(writer, name, text, epoch)
 
             # Log the losses to TensorBoard
