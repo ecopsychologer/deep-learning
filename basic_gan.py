@@ -21,7 +21,7 @@ disc_confidence = config.DISC_CONFIDENCE
 
 def start_tensorboard(logdir, port=6006):
     tb = TensorBoard()
-    tb.configure(argv=[None, '--logdir', logdir, '--port', str(port)])
+    tb.configure(argv=[None, '--logdir', logdir, '--port', str(port), '--bind_all'])
     url = tb.launch()
     config.create_console_space()
     print(f"TensorBoard started at {url}")
