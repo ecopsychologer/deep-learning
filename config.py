@@ -14,8 +14,8 @@ DISC_COMPLEXITY = 120 # lower rate for the discriminator helps generator
 
 # --- Learning Rate & Scheduling ---
 # Learning rates for generator and discriminator
-GEN_LEARN_RATE = 0.0001
-DISC_LEARN_RATE = 0.00001
+GEN_LEARN_RATE = 0.0002
+DISC_LEARN_RATE = 0.0002
 
 # Learning rate decay factor (None for no decay)
 LR_DECAY_FACTOR = None  # e.g., 0.95
