@@ -96,27 +96,28 @@ def train(generator, discriminator, dataset, start_epoch, writer):
             for image_batch in dataset:
                 noise = tf.random.normal([config.BATCH_SIZE, config.NOISE_DIM])
                 
-                # Train the discriminator with real and fake images
-                with tf.GradientTape() as disc_tape:
+                with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
+                    generated_images = generator(noise, training=True)
+
                     real_output = discriminator(image_batch, training=True)
-                    generated_images = generator(noise, training=False)
                     fake_output = discriminator(generated_images, training=True)
-                    disc_loss = discriminator_loss(real_output, fake_output)
                     
+                    # Adding noise to labels
+                    real_label_noise = tf.random.uniform(shape=tf.shape(real_output), minval=0.0, maxval=config.REAL_NOISE_VAL)
+                    fake_label_noise = tf.random.uniform(shape=tf.shape(fake_output), minval=0.0, maxval=config.FAKE_NOISE_VAL)
+
+                    gen_loss = generator_loss(fake_output)
+                    disc_loss = discriminator_loss(real_output, fake_output, real_label_noise, fake_label_noise)
+
+                gradients_of_generator = gen_tape.gradient(gen_loss, generator.trainable_variables)
                 gradients_of_discriminator = disc_tape.gradient(disc_loss, discriminator.trainable_variables)
+
+                generator_optimizer.apply_gradients(zip(gradients_of_generator, generator.trainable_variables))
                 discriminator_optimizer.apply_gradients(zip(gradients_of_discriminator, discriminator.trainable_variables))
+                
                 # Calculate and log discriminator accuracy
                 real_accuracy = tf.reduce_mean(tf.cast(tf.less(real_output, 0.5), tf.float32))
                 fake_accuracy = tf.reduce_mean(tf.cast(tf.greater(fake_output, 0.5), tf.float32))
-                
-                # Train the generator through the combined model
-                with tf.GradientTape() as gen_tape:
-                    generated_images = generator(noise, training=True)
-                    fake_output = discriminator(generated_images, training=False)
-                    gen_loss = generator_loss(fake_output)
-
-                gradients_of_generator = gen_tape.gradient(gen_loss, generator.trainable_variables)
-                generator_optimizer.apply_gradients(zip(gradients_of_generator, generator.trainable_variables))
                 
                 # Track average losses and accuracies
                 avg_gen_loss_tracker.update_state(gen_loss)

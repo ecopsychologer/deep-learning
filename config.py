@@ -15,7 +15,7 @@ DISC_COMPLEXITY = 120 # lower rate for the discriminator helps generator
 # --- Learning Rate & Scheduling ---
 # Learning rates for generator and discriminator
 GEN_LEARN_RATE = 0.0002
-DISC_LEARN_RATE = 0.0002
+DISC_LEARN_RATE = 0.00002
 
 # Learning rate decay factor (None for no decay)
 LR_DECAY_FACTOR = None  # e.g., 0.95
@@ -31,18 +31,10 @@ EPOCHS = 5000
 # --- Data Handling ---
 # Buffer size for shuffling data
 BUFFER_SIZE = 60000
-# Data augmentation settings (None or dictionary of augmentation parameters)
-DATA_AUGMENTATION = None  # e.g., {'flip': True, 'rotation': 15}
 
 # --- Regularization Techniques ---
 # Dropout rate (None for no dropout)
 DROPOUT_RATE = 0.25  # e.g., 0.3
-
-# --- GAN-Specific Parameters ---
-# Type of adversarial loss (e.g., 'wasserstein', 'hinge')
-ADV_LOSS_TYPE = 'wasserstein'
-# Gradient penalty weight (relevant for WGAN-GP)
-GRADIENT_PENALTY_WEIGHT = 10  
 
 # --- Noise and Confidence Parameters ---
 # Noise values for training stability
