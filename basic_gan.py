@@ -1,6 +1,10 @@
 import tensorflow as tf
+import logging
 from tensorboard.program import TensorBoard
 import argparse, train, config, saveNload
+import warnings
+warnings.filterwarnings('ignore', category=DeprecationWarning)
+tf.get_logger().setLevel(logging.ERROR)
 
 def start_tensorboard(logdir, port=6006):
     tb = TensorBoard()
