@@ -68,7 +68,7 @@ DISC_WEIGHTS_PATH = "./disc"
 LOG_DIR = "logs/"
 
 # Number of images to generate for visualization
-NUM_EXAMPLES_TO_GEN = 64
+NUM_EXAMPLES_TO_GEN = 16
 # Dimensionality of the noise vector
 NOISE_DIM = 100
 
