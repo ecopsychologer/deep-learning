@@ -74,6 +74,14 @@ def train(generator, discriminator, dataset, start_epoch, writer):
     # Setup the binary cross entropy loss
     cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=False)
     
+    def build_feature_extractor():
+        model = Sequential()
+        for layer in discriminator.layers[:config.FEAT_XTRCTR_LAYERS]:
+            model.add(layer)
+        return model
+
+    feature_extractor = build_feature_extractor()
+    
     # Define loss functions
     def discriminator_loss(real_output, fake_output, real_label_noise, fake_label_noise):
         noisy_real_labels = tf.ones_like(real_output) - real_label_noise
@@ -111,8 +119,8 @@ def train(generator, discriminator, dataset, start_epoch, writer):
                     fake_label_noise = tf.random.uniform(shape=tf.shape(fake_output), minval=config.FAKE_NOISE_MIN_VAL, maxval=config.FAKE_NOISE_MAX_VAL)
                     
                     # Get feature representations
-                    real_features = discriminator.get_layer('dense_5')(image_batch)
-                    fake_features = discriminator.get_layer('name_of_selected_layer')(generated_images)
+                    real_features = feature_extractor(image_batch)
+                    fake_features = feature_extractor(generated_images)
                     
                     # Calculate feature matching loss
                     feature_loss = tf.reduce_mean(tf.abs(real_features - fake_features))

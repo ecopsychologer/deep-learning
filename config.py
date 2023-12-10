@@ -22,6 +22,9 @@ LR_DECAY_FACTOR = None  # e.g., 0.95
 # Epoch interval for applying learning rate decay
 LR_DECAY_EPOCHS = None  # e.g., 100
 
+# --- Feature Matching ---
+# Number of layers from the discriminator to use in the feature extractor
+FEAT_XTRCTR_LAYERS = 5
 # Value for how much to give weight to feature matching loss
 LAMBDA_FEATURE = 0.4
 
