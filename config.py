@@ -14,7 +14,7 @@ DISC_COMPLEXITY = 64 # lower rate for the discriminator helps generator
 
 # --- Learning Rate & Scheduling ---
 # Learning rates for generator and discriminator
-GEN_LEARN_RATE = 0.0005
+GEN_LEARN_RATE = 0.001
 DISC_LEARN_RATE = 0.00002
 
 # Learning rate decay factor (None for no decay)
@@ -40,10 +40,10 @@ DROPOUT_RATE = 0.25  # e.g., 0.3
 # Noise values for training stability
 # The noise added to the labels helps to prevent the discriminator from becoming too confident. However, too much noise can destabilize training.
 FAKE_NOISE_VAL = 0.15
-REAL_NOISE_VAL = 0.5
+REAL_NOISE_VAL = 0.3
 # Discriminator's confidence threshold
 # lowering disc_confidence can help the generator learn better
-DISC_CONFIDENCE = 0.5
+DISC_CONFIDENCE = 0.1
 
 # --- Validation & Monitoring ---
 # Interval for saving model checkpoints
