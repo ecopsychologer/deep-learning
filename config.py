@@ -48,12 +48,15 @@ DISC_CONFIDENCE = 0.5
 # --- Validation & Monitoring ---
 # Interval for saving model checkpoints
 CHECKPOINT_INTERVAL = 10
+CHECKPOINT_EXT = ".keras"
 
 # --- File Paths ---
 # Paths for saving weights, logs, etc.
 GEN_WEIGHTS_PATH = "./gen"
 DISC_WEIGHTS_PATH = "./disc"
 LOG_DIR = "logs/"
+GEN_MODEL_PATH = "./gen_model_epoch_"
+DISC_MODEL_PATH = "./disc_model_epoch_"
 
 # Number of images to generate for visualization
 NUM_EXAMPLES_TO_GEN = 25

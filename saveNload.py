@@ -43,14 +43,15 @@ def plot_to_image(figure):
     return image
 
 def find_latest_epoch():
-    gen_files = glob.glob('./gen_epoch_*.index')
-    epochs = [int(re.search(r'gen_epoch_(\d+).index', file).group(1)) for file in gen_files]
+    gen_path = config.GEN_MODEL_PATH + "*" + config.CHECKPOINT_EXT
+    gen_files = glob.glob(gen_path)
+    epochs = [int(re.search(fr'{config.GEN_MODEL_PATH}(\d+){config.CHECKPOINT_EXT}', file).group(1)) for file in gen_files]
     return max(epochs) if epochs else None
 
 def save_model(gen, disc, epoch, writer):
     config.create_console_space()
-    gen_model_path = f"./gen_model_epoch_{epoch}.keras"
-    disc_model_path = f"./disc_model_epoch_{epoch}.keras"
+    gen_model_path = f"{config.GEN_MODEL_PATH}{epoch}{config.CHECKPOINT_EXT}"
+    disc_model_path = f"{config.DISC_MODEL_PATH}{epoch}{config.CHECKPOINT_EXT}"
     
     # Save the entire model to a file
     gen.save(gen_model_path)
@@ -63,8 +64,8 @@ def save_model(gen, disc, epoch, writer):
 
 def load_model(epoch):
     config.create_console_space()
-    gen_model_path = f"./gen_model_epoch_{epoch}.keras"
-    disc_model_path = f"./disc_model_epoch_{epoch}.keras"
+    gen_model_path = f"{config.GEN_MODEL_PATH}{epoch}{config.CHECKPOINT_EXT}"
+    disc_model_path = f"{config.DISC_MODEL_PATH}{epoch}{config.CHECKPOINT_EXT}"
     
     # Define custom objects
     custom_objects = {
@@ -78,33 +79,6 @@ def load_model(epoch):
     print(f"Models restored from epoch {epoch}")
     
     return gen_loaded, disc_loaded
-
-"""def save_model_weights(gen, disc, epoch, writer):
-    config.create_console_space()
-    gen_weights_path = f"./gen_epoch_{epoch}"
-    disc_weights_path = f"./disc_epoch_{epoch}"
-    gen.save_weights(gen_weights_path)
-    disc.save_weights(disc_weights_path)
-    print(f"Checkpoint saved for epoch {epoch}")
-    print("\n")
-    name = "Checkpoint"
-    text = "Checkpoint  " + str(epoch/config.CHECKPOINT_INTERVAL) +"/" + str(config.EPOCHS/config.CHECKPOINT_INTERVAL) + " completed."
-    train.log_to_tensorboard(writer, name, text, epoch)
-
-def load_model_weights(gen, disc):
-    config.create_console_space()
-    latest_epoch = find_latest_epoch()
-    if latest_epoch is not None:
-        gen_weights_path = f"./gen_epoch_{latest_epoch}"
-        disc_weights_path = f"./disc_epoch_{latest_epoch}"
-        print(f"Restoring generator from {gen_weights_path}")
-        gen.load_weights(gen_weights_path)
-        print(f"Restoring discriminator from {disc_weights_path}")
-        disc.load_weights(disc_weights_path)
-        print(f"Model weights restored from epoch {latest_epoch}")
-    else:
-        print("No saved model weights found, starting from scratch.")
-    print("\n")"""
         
 def clear_logs_and_checkpoints():
     config.create_console_space()
@@ -121,12 +95,11 @@ def clear_logs_and_checkpoints():
         os.chmod(log_dir, stat.S_IRWXU | stat.S_IRGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)
         print(f"Created empty log directory: {log_dir}")
 
+    gen_model_path = config.GEN_MODEL_PATH + "*" + config.CHECKPOINT_EXT
+    disc_model_path = config.DISC_MODEL_PATH + "*" + config.CHECKPOINT_EXT
     # Clear checkpoint files
-    for file in glob.glob('./gen_model_epoch_*.keras') + glob.glob('./disc_model_epoch_*.keras'):
+    for file in glob.glob(gen_model_path) + glob.glob(disc_model_path):
         os.remove(file)
-        """data_file = file.replace('.index', '.data-00000-of-00001')
-        if os.path.exists(data_file):
-            os.remove(data_file)"""
         print(f"Removed checkpoint file: {file}")
         
     # Clear Checkpoint file
