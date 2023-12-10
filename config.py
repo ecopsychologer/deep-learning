@@ -24,7 +24,7 @@ LR_DECAY_EPOCHS = None  # e.g., 100
 
 # --- Training Settings ---
 # Larger batches provide more stable gradients but may require more memory and computational power, while smaller batches can sometimes encourage diversity in the generated images and can lead to faster convergence but may also introduce more noise into the training process.
-BATCH_SIZE = 200
+BATCH_SIZE = 160
 # Total number of epochs for training
 EPOCHS = 5000
 
@@ -39,8 +39,8 @@ DROPOUT_RATE = 0.25  # e.g., 0.3
 # --- Noise and Confidence Parameters ---
 # Noise values for training stability
 # The noise added to the labels helps to prevent the discriminator from becoming too confident. However, too much noise can destabilize training.
-FAKE_NOISE_VAL = 0.2
-REAL_NOISE_VAL = 0.15
+FAKE_NOISE_VAL = 0.15
+REAL_NOISE_VAL = 0.25
 # Discriminator's confidence threshold
 # lowering disc_confidence can help the generator learn better
 DISC_CONFIDENCE = 0.6
