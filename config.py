@@ -22,6 +22,9 @@ LR_DECAY_FACTOR = None  # e.g., 0.95
 # Epoch interval for applying learning rate decay
 LR_DECAY_EPOCHS = None  # e.g., 100
 
+# Value for how much to give weight to feature matching loss
+LAMBDA_FEATURE = 0.4
+
 # --- Training Settings ---
 # Larger batches provide more stable gradients but may require more memory and computational power, while smaller batches can sometimes encourage diversity in the generated images and can lead to faster convergence but may also introduce more noise into the training process.
 BATCH_SIZE = 165
@@ -39,8 +42,10 @@ DROPOUT_RATE = 0.25  # e.g., 0.3
 # --- Noise and Confidence Parameters ---
 # Noise values for training stability
 # The noise added to the labels helps to prevent the discriminator from becoming too confident. However, too much noise can destabilize training.
-FAKE_NOISE_VAL = 0.15
-REAL_NOISE_VAL = 0.3
+FAKE_NOISE_MAX_VAL = 0.3
+FAKE_NOISE_MIN_VAL = 0.0
+REAL_NOISE_MAX_VAL = 1.2
+REAL_NOISE_MIN_VAL = 0.7
 # Discriminator's confidence threshold
 # lowering disc_confidence can help the generator learn better
 DISC_CONFIDENCE = 0.05

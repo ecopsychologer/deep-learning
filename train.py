@@ -106,11 +106,19 @@ def train(generator, discriminator, dataset, start_epoch, writer):
                     real_output = discriminator(image_batch, training=True)
                     fake_output = discriminator(generated_images, training=True)
                     
-                    # Adding noise to labels
-                    real_label_noise = tf.random.uniform(shape=tf.shape(real_output), minval=0.0, maxval=config.REAL_NOISE_VAL)
-                    fake_label_noise = tf.random.uniform(shape=tf.shape(fake_output), minval=0.0, maxval=config.FAKE_NOISE_VAL)
-
-                    gen_loss = generator_loss(fake_output)
+                    # Adding noise to labels to soften
+                    real_label_noise = tf.random.uniform(shape=tf.shape(real_output), minval=config.REAL_NOISE_MIN_VAL, maxval=config.REAL_NOISE_MAX_VAL)
+                    fake_label_noise = tf.random.uniform(shape=tf.shape(fake_output), minval=config.FAKE_NOISE_MIN_VAL, maxval=config.FAKE_NOISE_MAX_VAL)
+                    
+                    # Get feature representations
+                    real_features = discriminator.get_layer('name_of_selected_layer')(image_batch)
+                    fake_features = discriminator.get_layer('name_of_selected_layer')(generated_images)
+                    
+                    # Calculate feature matching loss
+                    feature_loss = tf.reduce_mean(tf.abs(real_features - fake_features))
+                    
+                    # Combine with original generator loss
+                    gen_loss = generator_loss(fake_output) + config.LAMBDA_FEATURE * feature_loss
                     disc_loss = discriminator_loss(real_output, fake_output, real_label_noise, fake_label_noise)
 
                 gradients_of_generator = gen_tape.gradient(gen_loss, generator.trainable_variables)
