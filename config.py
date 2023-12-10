@@ -14,7 +14,7 @@ DISC_COMPLEXITY = 77 # lower rate for the discriminator helps generator
 
 # --- Learning Rate & Scheduling ---
 # Learning rates for generator and discriminator
-GEN_LEARN_RATE = 0.0002
+GEN_LEARN_RATE = 0.0003
 DISC_LEARN_RATE = 0.00002
 
 # Learning rate decay factor (None for no decay)
@@ -43,7 +43,7 @@ FAKE_NOISE_VAL = 0.15
 REAL_NOISE_VAL = 0.25
 # Discriminator's confidence threshold
 # lowering disc_confidence can help the generator learn better
-DISC_CONFIDENCE = 0.6
+DISC_CONFIDENCE = 0.5
 
 # --- Validation & Monitoring ---
 # Interval for saving model checkpoints
