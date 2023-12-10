@@ -58,6 +58,10 @@ def build_discriminator():
     ])
     return model
 
+def log_to_tensorboard(writer, name, text, step):
+    with writer.as_default():
+        tf.summary.text(name, data=text, step=step)
+
 def train(generator, gen_opt, discriminator, disc_opt, dataset, start_epoch, epochs, writer):
     with writer.as_default():
         for epoch in range(start_epoch, epochs):
@@ -85,11 +89,14 @@ def train(generator, gen_opt, discriminator, disc_opt, dataset, start_epoch, epo
                 disc_opt.apply_gradients(zip(gradients_of_discriminator, discriminator.trainable_variables))
 
             if (epoch % config.LOGGING_INTERVAL) == 0 and epoch != start_epoch:
-                saveNload.save_model_weights(generator, discriminator, epoch)
+                saveNload.save_model_weights(generator, discriminator, epoch, writer)
 
             # Log the time it takes for each epoch
             duration = time.time() - start_time
             print(f'Epoch {epoch+1}/{config.EPOCHS} completed in {duration:.2f} seconds')
+            name = "Epoch Status"
+            text = "Epoch " + str(epoch+1) +"/" + config.EPOCHS + " completed in " + duration + " seconds"
+            log_to_tensorboard(writer, name, text, epoch)
 
             # Log the losses to TensorBoard
             with writer.as_default():

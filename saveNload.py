@@ -1,6 +1,6 @@
 import tensorflow as tf
 import matplotlib.pyplot as plt
-import glob, re, config, os, stat
+import glob, re, config, os, stat, train
 
 def load_data():
     (train_images, _), (_, _) = tf.keras.datasets.mnist.load_data()
@@ -47,7 +47,7 @@ def find_latest_epoch():
     epochs = [int(re.search(r'gen_epoch_(\d+).index', file).group(1)) for file in gen_files]
     return max(epochs) if epochs else None
 
-def save_model_weights(gen, disc, epoch):
+def save_model_weights(gen, disc, epoch, writer):
     config.create_console_space()
     gen_weights_path = f"./gen_epoch_{epoch}"
     disc_weights_path = f"./disc_epoch_{epoch}"
@@ -55,6 +55,9 @@ def save_model_weights(gen, disc, epoch):
     disc.save_weights(disc_weights_path)
     print(f"Checkpoint saved for epoch {epoch}")
     print("\n")
+    name = "Checkpoint"
+    text = "Checkpoint  " + str(epoch+1) +"/" + config.EPOCHS/config.CHECKPOINT_INTERVAL + " completed."
+    train.log_to_tensorboard(writer, name, text, epoch)
 
 def load_model_weights(gen, disc):
     config.create_console_space()
