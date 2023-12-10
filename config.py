@@ -13,9 +13,9 @@ GEN_COMPLEXITY = 510
 DISC_COMPLEXITY = 120 # lower rate for the discriminator helps generator
 
 # --- Learning Rate & Scheduling ---
-# Initial learning rates for generator and discriminator
-GEN_LEARN_RATE = 0.0015
-DISC_LEARN_RATE = 0.00005
+# Learning rates for generator and discriminator
+GEN_LEARN_RATE = 0.00015
+DISC_LEARN_RATE = 0.000005
 
 # Learning rate decay factor (None for no decay)
 LR_DECAY_FACTOR = None  # e.g., 0.95
@@ -24,7 +24,7 @@ LR_DECAY_EPOCHS = None  # e.g., 100
 
 # --- Training Settings ---
 # Larger batches provide more stable gradients but may require more memory and computational power, while smaller batches can sometimes encourage diversity in the generated images and can lead to faster convergence but may also introduce more noise into the training process.
-BATCH_SIZE = 170
+BATCH_SIZE = 157
 # Total number of epochs for training
 EPOCHS = 5000
 

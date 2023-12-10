@@ -40,7 +40,7 @@ def build_generator():
         GaussianNoise(0.115, input_shape=(config.NOISE_DIM,)),  # Add noise to input
         Dense(config.GEN_COMPLEXITY, activation='relu', input_shape=(100,)),  # 100-dimensional noise
         BatchNormalization(),
-        Dense(config.GEN_COMPLEXITY, activation='LeakyReLU'), # add an additional layer
+        Dense(config.GEN_COMPLEXITY, activation='relu'), # add an additional layer
         Dropout(config.DROPOUT_RATE),                               # add dropout
         MiniBatchDiscrimination(num_kernels=30, kernel_dim=3),
         Dense(784, activation='sigmoid'),           # Reshape to 28x28 image
