@@ -125,7 +125,7 @@ def train(generator, discriminator, dataset, start_epoch, writer):
                 avg_fake_accuracy_tracker.update_state(fake_accuracy)
 
             if (epoch % config.CHECKPOINT_INTERVAL) == 0 and epoch != start_epoch:
-                saveNload.save_model_weights(generator, discriminator, epoch, writer)
+                saveNload.save_weights(generator, discriminator, epoch, writer)
 
             # Log the time it takes for each epoch
             duration = time.time() - start_time
