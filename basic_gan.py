@@ -24,7 +24,7 @@ def start_tensorboard(logdir, port=6006):
     tb.configure(argv=[None, '--logdir', logdir, '--port', str(port), '--bind_all'])
     url = tb.launch()
     config.create_console_space()
-    print(f"TensorBoard started at {url}")
+    print(f"TensorBoard started at {url}\n")
 
 train_dataset = tf.data.Dataset.from_tensor_slices(saveNload.train_images).shuffle(config.BUFFER_SIZE).batch(config.BATCH_SIZE)
 

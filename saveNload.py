@@ -54,6 +54,7 @@ def save_model_weights(gen, disc, epoch):
     gen.save_weights(gen_weights_path)
     disc.save_weights(disc_weights_path)
     print(f"Checkpoint saved for epoch {epoch}")
+    print("\n")
 
 def load_model_weights(gen, disc):
     config.create_console_space()
@@ -68,6 +69,7 @@ def load_model_weights(gen, disc):
         print(f"Model weights restored from epoch {latest_epoch}")
     else:
         print("No saved model weights found, starting from scratch.")
+    print("\n")
         
 def clear_logs_and_checkpoints():
     config.create_console_space()
@@ -95,4 +97,5 @@ def clear_logs_and_checkpoints():
     # Clear Checkpoint file
     if os.path.exists("./checkpoint"):
         os.remove("./checkpoint")
-        print(f"Removed checkpoint file.")
+        print(f"Removed the \'checkpoint\' file.")
+    print("\n")

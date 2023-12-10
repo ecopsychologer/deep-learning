@@ -73,6 +73,9 @@ NUM_EXAMPLES_TO_GEN = 16
 NOISE_DIM = 100
 
 def create_console_space():
-    print("\n\\\\**********||=+=||**********//\n")
+    print("\n\\\\**********||=+=||**********//")
 
-
+def create_console_space_around(this):
+    print("\n\\\\**********||=+=||**********//")
+    print(f"{this}")
+    print("\n")
