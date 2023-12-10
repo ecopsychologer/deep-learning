@@ -37,14 +37,17 @@ class MiniBatchDiscrimination(Layer):
 
 def build_generator():
     model = Sequential([
-        GaussianNoise(0.115, input_shape=(config.NOISE_DIM,)),  # Add noise to input
+        GaussianNoise(0.115, input_shape=(config.NOISE_DIM,)),      # Add noise to input
         Dense(config.GEN_COMPLEXITY, activation='relu', input_shape=(100,)),  # 100-dimensional noise
         BatchNormalization(),
-        Dense(config.GEN_COMPLEXITY, activation='relu'), # add an additional layer
         Dropout(config.DROPOUT_RATE),                               # add dropout
-        MiniBatchDiscrimination(num_kernels=30, kernel_dim=3),
-        Dense(784, activation='sigmoid'),           # Reshape to 28x28 image
-        Reshape((28, 28))
+        Dense(config.GEN_COMPLEXITY, activation='LeakyReLU'),       # add an additional layer
+        Dropout(config.DROPOUT_RATE),                               # add dropout
+        MiniBatchDiscrimination(30, 3),                             # mini batch discrimination
+        Dense(config.GEN_COMPLEXITY, activation='LeakyReLU'),       # add an additional layer
+        Dropout(config.DROPOUT_RATE),                               # add dropout
+        Dense(784, activation='sigmoid'),
+        Reshape((28, 28))                                           # Reshape to 28x28 image
     ])
     return model
 
@@ -52,8 +55,10 @@ def build_discriminator():
     model = Sequential([
         Flatten(input_shape=(28, 28)),
         Dense(config.DISC_COMPLEXITY, activation='LeakyReLU'),
-        Dropout(config.DROPOUT_RATE),  # Add dropout
-        MiniBatchDiscrimination(num_kernels=50, kernel_dim=5),
+        Dropout(config.DROPOUT_RATE),                               # Add dropout
+        MiniBatchDiscrimination(50, 5),                             # mini batch discrimination
+        Dense(config.DISC_COMPLEXITY, activation='LeakyReLU'),
+        Dropout(config.DROPOUT_RATE),                               # Add 2nd dropout
         Dense(1, activation='sigmoid')
     ])
     return model
