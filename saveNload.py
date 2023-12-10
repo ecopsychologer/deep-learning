@@ -49,8 +49,8 @@ def find_latest_epoch():
 
 def save_model(gen, disc, epoch, writer):
     config.create_console_space()
-    gen_model_path = f"./gen_model_epoch_{epoch}.h5"
-    disc_model_path = f"./disc_model_epoch_{epoch}.h5"
+    gen_model_path = f"./gen_model_epoch_{epoch}.keras"
+    disc_model_path = f"./disc_model_epoch_{epoch}.keras"
     
     # Save the entire model to a file
     gen.save(gen_model_path)
@@ -63,8 +63,8 @@ def save_model(gen, disc, epoch, writer):
 
 def load_model(epoch):
     config.create_console_space()
-    gen_model_path = f"./gen_model_epoch_{epoch}.h5"
-    disc_model_path = f"./disc_model_epoch_{epoch}.h5"
+    gen_model_path = f"./gen_model_epoch_{epoch}.keras"
+    disc_model_path = f"./disc_model_epoch_{epoch}.keras"
     
     # Load the entire model from the file
     gen_loaded = tf.keras.models.load_model(gen_model_path)
@@ -117,7 +117,7 @@ def clear_logs_and_checkpoints():
         print(f"Created empty log directory: {log_dir}")
 
     # Clear checkpoint files
-    for file in glob.glob('./gen_model_epoch_*.h5') + glob.glob('./disc_model_epoch_*.h5'):
+    for file in glob.glob('./gen_model_epoch_*.keras') + glob.glob('./disc_model_epoch_*.keras'):
         os.remove(file)
         """data_file = file.replace('.index', '.data-00000-of-00001')
         if os.path.exists(data_file):
