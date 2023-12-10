@@ -105,6 +105,9 @@ def train(generator, discriminator, dataset, start_epoch, writer):
                     
                 gradients_of_discriminator = disc_tape.gradient(disc_loss, discriminator.trainable_variables)
                 discriminator_optimizer.apply_gradients(zip(gradients_of_discriminator, discriminator.trainable_variables))
+                # Calculate and log discriminator accuracy
+                real_accuracy = tf.reduce_mean(tf.cast(tf.less(real_output, 0.5), tf.float32))
+                fake_accuracy = tf.reduce_mean(tf.cast(tf.greater(fake_output, 0.5), tf.float32))
                 
                 # Train the generator through the combined model
                 with tf.GradientTape() as gen_tape:
