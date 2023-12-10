@@ -9,7 +9,7 @@ RANDOM_SEED = 42
 # These control how quickly the generator and discriminator learn. Too high, and they may overshoot optimal solutions; too low, and they may get stuck or learn very slowly.
 # If the discriminator learns too fast, it may overfit to the current generator's output and not provide useful gradients. If the generator's learning rate is too low in comparison, it may not catch up, leading to poor image quality.
 # These are the number of units in the dense layers of your generator and discriminator models. Increasing these can give the network more capacity to learn complex patterns, but too much complexity can lead to overfitting or longer training times.
-GEN_COMPLEXITY = 500
+GEN_COMPLEXITY = 510
 DISC_COMPLEXITY = 120 # lower rate for the discriminator helps generator
 
 # --- Learning Rate & Scheduling ---
@@ -36,7 +36,7 @@ DATA_AUGMENTATION = None  # e.g., {'flip': True, 'rotation': 15}
 
 # --- Regularization Techniques ---
 # Dropout rate (None for no dropout)
-DROPOUT_RATE = 0.2  # e.g., 0.3
+DROPOUT_RATE = 0.25  # e.g., 0.3
 
 # --- GAN-Specific Parameters ---
 # Type of adversarial loss (e.g., 'wasserstein', 'hinge')
@@ -47,19 +47,15 @@ GRADIENT_PENALTY_WEIGHT = 10
 # --- Noise and Confidence Parameters ---
 # Noise values for training stability
 # The noise added to the labels helps to prevent the discriminator from becoming too confident. However, too much noise can destabilize training.
-FAKE_NOISE_VAL = 0.05
+FAKE_NOISE_VAL = 0.1
 REAL_NOISE_VAL = 0.15
 # Discriminator's confidence threshold
 # lowering disc_confidence can help the generator learn better
-DISC_CONFIDENCE = 0.8
+DISC_CONFIDENCE = 0.7
 
 # --- Validation & Monitoring ---
 # Interval for saving model checkpoints
-CHECKPOINT_INTERVAL = 100
-# Interval for logging performance metrics
-LOGGING_INTERVAL = 10
-# Metrics for validation (e.g., FID score)
-VALIDATION_METRICS = ['fid'] 
+CHECKPOINT_INTERVAL = 10
 
 # --- File Paths ---
 # Paths for saving weights, logs, etc.
@@ -68,7 +64,7 @@ DISC_WEIGHTS_PATH = "./disc"
 LOG_DIR = "logs/"
 
 # Number of images to generate for visualization
-NUM_EXAMPLES_TO_GEN = 20
+NUM_EXAMPLES_TO_GEN = 25
 # Dimensionality of the noise vector
 NOISE_DIM = 100
 

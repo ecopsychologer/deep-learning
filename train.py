@@ -88,7 +88,7 @@ def train(generator, gen_opt, discriminator, disc_opt, dataset, start_epoch, epo
                 gen_opt.apply_gradients(zip(gradients_of_generator, generator.trainable_variables))
                 disc_opt.apply_gradients(zip(gradients_of_discriminator, discriminator.trainable_variables))
 
-            if (epoch % config.LOGGING_INTERVAL) == 0 and epoch != start_epoch:
+            if (epoch % config.CHECKPOINT_INTERVAL) == 0 and epoch != start_epoch:
                 saveNload.save_model_weights(generator, discriminator, epoch, writer)
 
             # Log the time it takes for each epoch
