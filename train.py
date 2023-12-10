@@ -125,14 +125,14 @@ def train(generator, discriminator, dataset, start_epoch, writer):
                 avg_fake_accuracy_tracker.update_state(fake_accuracy)
 
             if (epoch % config.CHECKPOINT_INTERVAL) == 0 and epoch != start_epoch:
-                saveNload.save_weights(generator, discriminator, epoch, writer)
+                saveNload.save_model(generator, discriminator, epoch, writer)
 
             # Log the time it takes for each epoch
             duration = time.time() - start_time
             print(f'Epoch {epoch+1}/{config.EPOCHS} completed in {duration:.2f} seconds')
             name = "Epoch Status"
             text = "Epoch " + str(epoch+1) +"/" + str(config.EPOCHS) + " completed in " + str(duration) + " seconds"
-            log_to_tensorboard(writer, name, text, epoch)
+            log_to_tensorboard(writer, name, text, epoch+1)
             
             # Log the losses and accuracies to TensorBoard
             # Log the average metrics for the epoch
