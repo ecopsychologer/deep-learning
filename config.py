@@ -10,7 +10,7 @@ RANDOM_SEED = 42
 # If the discriminator learns too fast, it may overfit to the current generator's output and not provide useful gradients. If the generator's learning rate is too low in comparison, it may not catch up, leading to poor image quality.
 # These are the number of units in the dense layers of your generator and discriminator models. Increasing these can give the network more capacity to learn complex patterns, but too much complexity can lead to overfitting or longer training times.
 GEN_COMPLEXITY = 510
-DISC_COMPLEXITY = 120 # lower rate for the discriminator helps generator
+DISC_COMPLEXITY = 77 # lower rate for the discriminator helps generator
 
 # --- Learning Rate & Scheduling ---
 # Learning rates for generator and discriminator
@@ -43,7 +43,7 @@ FAKE_NOISE_VAL = 0.1
 REAL_NOISE_VAL = 0.05
 # Discriminator's confidence threshold
 # lowering disc_confidence can help the generator learn better
-DISC_CONFIDENCE = 0.69
+DISC_CONFIDENCE = 0.6
 
 # --- Validation & Monitoring ---
 # Interval for saving model checkpoints
