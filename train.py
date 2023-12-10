@@ -84,6 +84,12 @@ def train(generator, discriminator, dataset, start_epoch, writer):
     def generator_loss(fake_output):
         return cross_entropy(tf.ones_like(fake_output), fake_output)
     
+    # Average metrics trackers
+    avg_gen_loss_tracker = tf.keras.metrics.Mean(name='avg_gen_loss')
+    avg_disc_loss_tracker = tf.keras.metrics.Mean(name='avg_disc_loss')
+    avg_real_accuracy_tracker = tf.keras.metrics.Mean(name='avg_real_accuracy')
+    avg_fake_accuracy_tracker = tf.keras.metrics.Mean(name='avg_fake_accuracy')
+    
     with writer.as_default():
         for epoch in range(start_epoch, config.EPOCHS):
             start_time = time.time()
@@ -109,9 +115,11 @@ def train(generator, discriminator, dataset, start_epoch, writer):
                 gradients_of_generator = gen_tape.gradient(gen_loss, generator.trainable_variables)
                 generator_optimizer.apply_gradients(zip(gradients_of_generator, generator.trainable_variables))
                 
-                # Calculate and log discriminator accuracy
-                real_accuracy = tf.reduce_mean(tf.cast(tf.less(real_output, 0.5), tf.float32))
-                fake_accuracy = tf.reduce_mean(tf.cast(tf.greater(fake_output, 0.5), tf.float32))
+                # Track average losses and accuracies
+                avg_gen_loss_tracker.update_state(gen_loss)
+                avg_disc_loss_tracker.update_state(disc_loss)
+                avg_real_accuracy_tracker.update_state(real_accuracy)
+                avg_fake_accuracy_tracker.update_state(fake_accuracy)
 
             if (epoch % config.CHECKPOINT_INTERVAL) == 0 and epoch != start_epoch:
                 saveNload.save_model_weights(generator, discriminator, epoch, writer)
@@ -124,14 +132,20 @@ def train(generator, discriminator, dataset, start_epoch, writer):
             log_to_tensorboard(writer, name, text, epoch)
             
             # Log the losses and accuracies to TensorBoard
+            # Log the average metrics for the epoch
             with writer.as_default():
-                tf.summary.scalar('Generator Loss', gen_loss, step=epoch)
-                tf.summary.scalar('Discriminator Loss', disc_loss, step=epoch)
-                tf.summary.scalar('Discriminator Real Accuracy', real_accuracy, step=epoch)
-                tf.summary.scalar('Discriminator Fake Accuracy', fake_accuracy, step=epoch)
+                tf.summary.scalar('Average Generator Loss', avg_gen_loss_tracker.result(), step=epoch)
+                tf.summary.scalar('Average Discriminator Loss', avg_disc_loss_tracker.result(), step=epoch)
+                tf.summary.scalar('Average Real Accuracy', avg_real_accuracy_tracker.result(), step=epoch)
+                tf.summary.scalar('Average Fake Accuracy', avg_fake_accuracy_tracker.result(), step=epoch)
                 writer.flush()
             if (epoch % 5) == 0:
                 saveNload.generate_and_save_images(generator, epoch, seed, writer)
+            # Reset metrics every epoch
+            avg_gen_loss_tracker.reset_states()
+            avg_disc_loss_tracker.reset_states()
+            avg_real_accuracy_tracker.reset_states()
+            avg_fake_accuracy_tracker.reset_states()
 
     # Generate after the final epoch
     saveNload.generate_and_save_images(generator, config.EPOCHS, seed, writer)

@@ -23,9 +23,7 @@ def main(reset=False):
     discriminator = train.build_discriminator()
     # Load if a checkpoint is available
     if latest_epoch is not None:
-        saveNload.load_model_weights(generator, discriminator)
-    # make optimizer
-
+        generator, discriminator = saveNload.load_model(latest_epoch)
 
     # Start tensorboard
     start_tensorboard(config.LOG_DIR)

@@ -47,7 +47,34 @@ def find_latest_epoch():
     epochs = [int(re.search(r'gen_epoch_(\d+).index', file).group(1)) for file in gen_files]
     return max(epochs) if epochs else None
 
-def save_model_weights(gen, disc, epoch, writer):
+def save_model(gen, disc, epoch, writer):
+    config.create_console_space()
+    gen_model_path = f"./gen_model_epoch_{epoch}.h5"
+    disc_model_path = f"./disc_model_epoch_{epoch}.h5"
+    
+    # Save the entire model to a file
+    gen.save(gen_model_path)
+    disc.save(disc_model_path)
+    
+    print(f"Full model saved for epoch {epoch}")
+    name = "Model Save Status"
+    text = "Checkpoint  " + str(epoch/config.CHECKPOINT_INTERVAL) +"/" + str(config.EPOCHS/config.CHECKPOINT_INTERVAL) + " completed."
+    train.log_to_tensorboard(writer, name, text, epoch)
+
+def load_model(epoch):
+    config.create_console_space()
+    gen_model_path = f"./gen_model_epoch_{epoch}.h5"
+    disc_model_path = f"./disc_model_epoch_{epoch}.h5"
+    
+    # Load the entire model from the file
+    gen_loaded = tf.keras.models.load_model(gen_model_path)
+    disc_loaded = tf.keras.models.load_model(disc_model_path)
+    
+    print(f"Models restored from epoch {epoch}")
+    
+    return gen_loaded, disc_loaded
+
+"""def save_model_weights(gen, disc, epoch, writer):
     config.create_console_space()
     gen_weights_path = f"./gen_epoch_{epoch}"
     disc_weights_path = f"./disc_epoch_{epoch}"
@@ -72,7 +99,7 @@ def load_model_weights(gen, disc):
         print(f"Model weights restored from epoch {latest_epoch}")
     else:
         print("No saved model weights found, starting from scratch.")
-    print("\n")
+    print("\n")"""
         
 def clear_logs_and_checkpoints():
     config.create_console_space()
@@ -89,13 +116,13 @@ def clear_logs_and_checkpoints():
         os.chmod(log_dir, stat.S_IRWXU | stat.S_IRGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)
         print(f"Created empty log directory: {log_dir}")
 
-    # Clear generator and discriminator checkpoint files
-    for file in glob.glob('./gen_epoch_*.index') + glob.glob('./disc_epoch_*.index'):
+    # Clear checkpoint files
+    for file in glob.glob('./gen_model_epoch_*.h5') + glob.glob('./disc_model_epoch_*.h5'):
         os.remove(file)
-        data_file = file.replace('.index', '.data-00000-of-00001')
+        """data_file = file.replace('.index', '.data-00000-of-00001')
         if os.path.exists(data_file):
-            os.remove(data_file)
-        print(f"Removed checkpoint file: {file} and {data_file}")
+            os.remove(data_file)"""
+        print(f"Removed checkpoint file: {file}")
         
     # Clear Checkpoint file
     if os.path.exists("./checkpoint"):
