@@ -66,9 +66,14 @@ def load_model(epoch):
     gen_model_path = f"./gen_model_epoch_{epoch}.keras"
     disc_model_path = f"./disc_model_epoch_{epoch}.keras"
     
+    # Define custom objects
+    custom_objects = {
+        'MiniBatchDiscrimination': train.MiniBatchDiscrimination
+    }
+    
     # Load the entire model from the file
-    gen_loaded = tf.keras.models.load_model(gen_model_path)
-    disc_loaded = tf.keras.models.load_model(disc_model_path)
+    gen_loaded = tf.keras.models.load_model(gen_model_path, custom_objects)
+    disc_loaded = tf.keras.models.load_model(disc_model_path, custom_objects)
     
     print(f"Models restored from epoch {epoch}")
     
