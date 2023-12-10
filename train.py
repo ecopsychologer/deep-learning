@@ -40,8 +40,9 @@ def build_generator():
         GaussianNoise(0.115, input_shape=(config.NOISE_DIM,)),  # Add noise to input
         Dense(config.GEN_COMPLEXITY, activation='relu', input_shape=(100,)),  # 100-dimensional noise
         BatchNormalization(),
-        # Dense(gen_complexity/2, activation='relu'), # add an additional layer half as complex
-        Dropout(0.3),                               # add dropout
+        Dense(config.GEN_COMPLEXITY, activation='LeakyReLU'), # add an additional layer
+        Dropout(config.DROPOUT_RATE),                               # add dropout
+        MiniBatchDiscrimination(num_kernels=30, kernel_dim=3),
         Dense(784, activation='sigmoid'),           # Reshape to 28x28 image
         Reshape((28, 28))
     ])
@@ -51,7 +52,7 @@ def build_discriminator():
     model = Sequential([
         Flatten(input_shape=(28, 28)),
         Dense(config.DISC_COMPLEXITY, activation='LeakyReLU'),
-        Dropout(0.4),  # Add dropout
+        Dropout(config.DROPOUT_RATE),  # Add dropout
         MiniBatchDiscrimination(num_kernels=50, kernel_dim=5),
         Dense(1, activation='sigmoid')
     ])
@@ -83,12 +84,12 @@ def train(generator, gen_opt, discriminator, disc_opt, dataset, start_epoch, epo
                 gen_opt.apply_gradients(zip(gradients_of_generator, generator.trainable_variables))
                 disc_opt.apply_gradients(zip(gradients_of_discriminator, discriminator.trainable_variables))
 
-            if (epoch % 10) == 0 and epoch != start_epoch:
+            if (epoch % config.LOGGING_INTERVAL) == 0 and epoch != start_epoch:
                 saveNload.save_model_weights(generator, discriminator, epoch)
 
             # Log the time it takes for each epoch
             duration = time.time() - start_time
-            print(f'Epoch {epoch+1}/{epochs} completed in {duration:.2f} seconds')
+            print(f'Epoch {epoch+1}/{config.EPOCHS} completed in {duration:.2f} seconds')
 
             # Log the losses to TensorBoard
             with writer.as_default():

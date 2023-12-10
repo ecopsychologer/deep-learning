@@ -36,13 +36,13 @@ DATA_AUGMENTATION = None  # e.g., {'flip': True, 'rotation': 15}
 
 # --- Regularization Techniques ---
 # Dropout rate (None for no dropout)
-DROPOUT_RATE = None  # e.g., 0.3
+DROPOUT_RATE = 0.2  # e.g., 0.3
 
 # --- GAN-Specific Parameters ---
 # Type of adversarial loss (e.g., 'wasserstein', 'hinge')
-ADV_LOSS_TYPE = 'wasserstein'  # Placeholder, adjust as per your model
+ADV_LOSS_TYPE = 'wasserstein'
 # Gradient penalty weight (relevant for WGAN-GP)
-GRADIENT_PENALTY_WEIGHT = 10  # Placeholder, adjust as per your model
+GRADIENT_PENALTY_WEIGHT = 10  
 
 # --- Noise and Confidence Parameters ---
 # Noise values for training stability
@@ -59,7 +59,7 @@ CHECKPOINT_INTERVAL = 100
 # Interval for logging performance metrics
 LOGGING_INTERVAL = 10
 # Metrics for validation (e.g., FID score)
-VALIDATION_METRICS = ['fid']  # Placeholder, implement metric calculation
+VALIDATION_METRICS = ['fid'] 
 
 # --- File Paths ---
 # Paths for saving weights, logs, etc.
