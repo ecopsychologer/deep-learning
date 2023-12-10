@@ -111,7 +111,7 @@ def train(generator, discriminator, dataset, start_epoch, writer):
                     fake_label_noise = tf.random.uniform(shape=tf.shape(fake_output), minval=config.FAKE_NOISE_MIN_VAL, maxval=config.FAKE_NOISE_MAX_VAL)
                     
                     # Get feature representations
-                    real_features = discriminator.get_layer('name_of_selected_layer')(image_batch)
+                    real_features = discriminator.get_layer('dense_5')(image_batch)
                     fake_features = discriminator.get_layer('name_of_selected_layer')(generated_images)
                     
                     # Calculate feature matching loss

@@ -22,9 +22,6 @@ def main(reset=False):
     generator = train.build_generator()
     discriminator = train.build_discriminator()
     
-    for layer in discriminator.layers:
-        print(layer.name)
-    
     # Load if a checkpoint is available
     if latest_epoch is not None:
         generator, discriminator = saveNload.load_model(latest_epoch)
