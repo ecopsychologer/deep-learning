@@ -18,7 +18,7 @@ def generate_and_save_images(model, epoch, test_input, writer):
 
     for i in range(predictions.shape[0]):
         plt.subplot(5, 5, i+1)
-        plt.imshow(predictions[i, :, :] * 127.5 + 127.5, cmap='gray')
+        plt.imshow(predictions[i, :, :] * 127.5 + 127.5, cmap='gray_r')
         plt.axis('off')
 
     # Save the images for TensorBoard

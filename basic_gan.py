@@ -2,23 +2,6 @@ import tensorflow as tf
 from tensorboard.program import TensorBoard
 import argparse, train, config, saveNload
 
-""" global variables that require reset """
-gen_complexity = config.GEN_COMPLEXITY
-disc_complexity = config.DISC_COMPLEXITY
-gen_weights_path = config.GEN_WEIGHTS_PATH
-disc_weights_path = config.DISC_WEIGHTS_PATH
-log_dir = config.LOG_DIR
-
-""" global values that do not require a reset """
-gen_learn_rate = config.GEN_LEARN_RATE
-disc_learn_rate = config.DISC_LEARN_RATE 
-fake_noise_val = config.FAKE_NOISE_VAL
-real_noise_val = config.REAL_NOISE_VAL
-disc_confidence = config.DISC_CONFIDENCE
-
-#------------------------------------------------------------------------------#
-
-
 def start_tensorboard(logdir, port=6006):
     tb = TensorBoard()
     tb.configure(argv=[None, '--logdir', logdir, '--port', str(port), '--bind_all'])
@@ -41,15 +24,15 @@ def main(reset=False):
     # Load if a checkpoint is available
     if latest_epoch is not None:
         saveNload.load_model_weights(generator, discriminator)
-    generator_optimizer = tf.keras.optimizers.Adam(gen_learn_rate)
-    discriminator_optimizer = tf.keras.optimizers.Adam(disc_learn_rate)
+    # make optimizer
+
 
     # Start tensorboard
-    start_tensorboard(log_dir)
-    summary_writer = tf.summary.create_file_writer(log_dir)
+    start_tensorboard(config.LOG_DIR)
+    summary_writer = tf.summary.create_file_writer(config.LOG_DIR)
     # Start training
     start_epoch = latest_epoch if latest_epoch is not None else 0
-    train.train(generator, generator_optimizer, discriminator, discriminator_optimizer, train_dataset, start_epoch, config.EPOCHS, summary_writer)
+    train.train(generator, discriminator, train_dataset, start_epoch, summary_writer)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
