@@ -24,7 +24,7 @@ LR_DECAY_EPOCHS = None  # e.g., 100
 
 # --- Training Settings ---
 # Larger batches provide more stable gradients but may require more memory and computational power, while smaller batches can sometimes encourage diversity in the generated images and can lead to faster convergence but may also introduce more noise into the training process.
-BATCH_SIZE = 157
+BATCH_SIZE = 256
 # Total number of epochs for training
 EPOCHS = 5000
 
