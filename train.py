@@ -125,10 +125,6 @@ def train(generator, discriminator, dataset, start_epoch, writer):
                     real_features = feature_extractor(image_batch)
                     fake_features = feature_extractor(generated_images)
                     
-                    # Debug: print shapes
-                    print("Real features shape:", real_features.shape)
-                    print("Fake features shape:", fake_features.shape)
-                    
                     # Calculate feature matching loss
                     feature_loss = tf.reduce_mean(tf.abs(real_features - fake_features))
                     
