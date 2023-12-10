@@ -30,7 +30,7 @@ EPOCHS = 5000
 
 # --- Data Handling ---
 # Buffer size for shuffling data
-BUFFER_SIZE = 60000
+BUFFER_SIZE = 80000
 
 # --- Regularization Techniques ---
 # Dropout rate (None for no dropout)
@@ -40,10 +40,10 @@ DROPOUT_RATE = 0.25  # e.g., 0.3
 # Noise values for training stability
 # The noise added to the labels helps to prevent the discriminator from becoming too confident. However, too much noise can destabilize training.
 FAKE_NOISE_VAL = 0.1
-REAL_NOISE_VAL = 0.15
+REAL_NOISE_VAL = 0.05
 # Discriminator's confidence threshold
 # lowering disc_confidence can help the generator learn better
-DISC_CONFIDENCE = 0.7
+DISC_CONFIDENCE = 0.69
 
 # --- Validation & Monitoring ---
 # Interval for saving model checkpoints
