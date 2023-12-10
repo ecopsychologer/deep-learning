@@ -75,9 +75,13 @@ def train(generator, discriminator, dataset, start_epoch, writer):
     cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=False)
     
     # Define loss functions
-    def discriminator_loss(real_output, fake_output):
-        real_loss = cross_entropy(tf.ones_like(real_output), real_output)
-        fake_loss = cross_entropy(tf.zeros_like(fake_output), fake_output)
+    def discriminator_loss(real_output, fake_output, real_label_noise, fake_label_noise):
+        noisy_real_labels = tf.ones_like(real_output) - real_label_noise
+        noisy_fake_labels = tf.zeros_like(fake_output) + fake_label_noise
+
+        real_loss = cross_entropy(noisy_real_labels * config.DISC_CONFIDENCE, real_output)
+        fake_loss = cross_entropy(noisy_fake_labels, fake_output)
+        
         total_loss = real_loss + fake_loss
         return total_loss
 
