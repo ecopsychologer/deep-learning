@@ -83,6 +83,8 @@ LATENT_VECTOR_PATH = LOG_DIR
 NUM_EXAMPLES_TO_GEN = 25
 # Dimensionality of the noise vector
 NOISE_DIM = 100
+# Interpolation Steps
+INTERPOLATION_STEPS = 10
 
 def create_console_space():
     print("\n\\\\**********||=+=||**********//")

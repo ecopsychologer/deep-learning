@@ -89,7 +89,7 @@ def log_and_save_plot(examples, epoch, writer, append=0, n=5):
         writer.flush()
     plt.close()
     
-def generate_interpolated_images(generator, start_epoch, end_epoch, writer, num_steps=10):
+def generate_interpolated_images(generator, start_epoch, end_epoch, writer, num_steps=config.INTERPOLATION_STEPS):
     start_points = np.load(f"{config.LOG_DIR}latent_vectors_epoch_{start_epoch}.npy")
     end_points = np.load(f"{config.LOG_DIR}latent_vectors_epoch_{end_epoch}.npy")
     interpolated_points = train.interpolate_latent_points(start_points, end_points, num_steps)
