@@ -13,8 +13,6 @@ def start_tensorboard(logdir, port=6006):
     config.create_console_space()
     print(f"TensorBoard started at {url}\n")
 
-train_dataset = tf.data.Dataset.from_tensor_slices(saveNload.train_images).shuffle(config.BUFFER_SIZE).batch(config.BATCH_SIZE)
-
 def main(reset=False):
     latest_epoch = saveNload.find_latest_epoch()
     # If reset is True, remove the checkpoints, else load them
@@ -36,7 +34,7 @@ def main(reset=False):
     summary_writer = tf.summary.create_file_writer(config.LOG_DIR)
     # Start training
     start_epoch = latest_epoch if latest_epoch is not None else 0
-    train.train(generator, discriminator, gan, train_dataset, start_epoch, summary_writer)
+    train.train(generator, discriminator, gan, saveNload.train_images, start_epoch, summary_writer)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
