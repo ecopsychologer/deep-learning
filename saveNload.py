@@ -1,12 +1,12 @@
 import tensorflow as tf
 import matplotlib.pyplot as plt
-from numpy import expand_dims
+from numpy import expand_dims, randint, ones, zeros
 from keras.datasets.mnist import load_data
 import config, glob, re, config, os, stat, train
 from numpy.random import randn
 
 # load and prepare mnist training images
-def load_real_samples():
+def load_samples():
     # load mnist dataset
     (trainX, _), (_, _) = load_data()
     # expand to 3d, e.g. add channels dimension
@@ -17,7 +17,52 @@ def load_real_samples():
     X = X / 255.0
     return X
 
-train_images = load_real_samples()
+train_images = load_samples()
+ 
+# select real samples
+def generate_real_samples(dataset, n_samples=config.SAMPLES):
+    # choose random instances
+    inst = randint(0, dataset.shape[0], n_samples)
+    # retrieve selected images
+    X = dataset[inst]
+    # generate 'real' class labels (1)
+    y = ones((n_samples, 1))
+    return X, y
+ 
+# generate points in latent space as input for the generator
+def generate_latent_points(latent_dim=config.LATENT_DIM, n_samples=config.SAMPLES):
+    # generate points in the latent space
+    x_input = randn(latent_dim * n_samples)
+    # reshape into a batch of inputs for the network
+    x_input = x_input.reshape(n_samples, latent_dim)
+    return x_input
+ 
+# use the generator to generate n fake examples, with class labels
+def generate_fake_samples(generator, latent_dim=config.LATENT_DIM, n_samples=config.SAMPLES):
+    # generate points in latent space
+    x_input = generate_latent_points(latent_dim, n_samples)
+    # predict outputs
+    X = generator.predict(x_input)
+    # create 'fake' class labels (0)
+    y = zeros((n_samples, 1))
+    return X, y
+
+# evaluate the discriminator
+def eval_discrim(epoch, generator, discriminator, dataset, writer, n_samples=100, latent_dim=config.LATENT_DIM):
+    # prepare real samples
+    X_real, y_real = generate_real_samples(dataset, n_samples)
+    # evaluate discriminator on real examples
+    _, acc_real = discriminator.evaluate(X_real, y_real, verbose=0)
+    # prepare fake examples
+    x_fake, y_fake = generate_fake_samples(generator, latent_dim, n_samples)
+    # evaluate discriminator on fake examples
+    _, acc_fake = discriminator.evaluate(x_fake, y_fake, verbose=0)
+    # summarize discriminator performance
+    print('Accuracy: [real: %.0f%%], [fake: %.0f%%]' % (acc_real*100, acc_fake*100))
+    with writer.as_default():
+        tf.summary.scalar('Discriminator Real Accuracy', acc_real*100, step=epoch)
+        tf.summary.scalar('Discriminator Fake Accuracy', acc_fake*100, step=epoch)
+        writer.flush()
 
 def log_and_save_plot(examples, epoch, writer, n=5):
     fig = plt.figure(figsize=(n, n))
@@ -38,13 +83,13 @@ def log_and_save_plot(examples, epoch, writer, n=5):
         writer.flush()
     plt.close()
 
-def generate_and_save_images(epoch, g_model, writer, latent_dim=config.LATENT_DIM, n_samples=100):
+def generate_and_save_images(epoch, generator, writer, latent_dim=config.LATENT_DIM, n_samples=100):
     # generate points in latent space
     x_input = randn(latent_dim * n_samples)
     # reshape into a batch of inputs for the network
     x_input = x_input.reshape(n_samples, latent_dim)
     # predict outputs
-    X = g_model.predict(x_input)
+    X = generator.predict(x_input)
     log_and_save_plot(X, epoch, writer)
 
 def plot_to_image(figure):

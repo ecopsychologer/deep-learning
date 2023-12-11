@@ -3,6 +3,7 @@ from keras.optimizers import Adam
 from keras.models import Sequential
 from keras.layers import Dense, Reshape, Flatten, Conv2D, Conv2DTranspose, LeakyReLU, Dropout
 from tensorflow.keras import Sequential
+from numpy import expand_dims, zeros, ones, vstack
 import config, saveNload, time
 
 seed = tf.random.normal([config.NUM_EXAMPLES_TO_GEN, config.NOISE_DIM])
@@ -39,38 +40,50 @@ def build_discriminator(in_shape=(28,28,1)):
     model.compile(loss='binary_crossentropy', optimizer=opt, metrics=['accuracy'])
     return model
 
+# define the combined generator and discriminator model, for updating the generator
+def define_gan(generator, discriminator):
+    # lock discriminator
+    discriminator.trainable = False
+    # connect them
+    model = Sequential()
+    model.add(generator)
+    model.add(discriminator)
+    # compile model
+    opt = Adam(learning_rate=config.GAN_LEARN_RATE, beta_1=config.GAN_BETA_1)
+    model.compile(loss='binary_crossentropy', optimizer=opt)
+    return model
+
+
+# Setup the binary cross entropy loss
+cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=False)
+
+# Define loss functions
+def discriminator_loss(real_output, fake_output, real_label_noise, fake_label_noise):
+    noisy_real_labels = tf.ones_like(real_output) - real_label_noise
+    noisy_fake_labels = tf.zeros_like(fake_output) + fake_label_noise
+
+    real_loss = cross_entropy(noisy_real_labels * config.DISC_CONFIDENCE, real_output)
+    fake_loss = cross_entropy(noisy_fake_labels, fake_output)
+    
+    total_loss = real_loss + fake_loss
+    return total_loss
+
+def generator_loss(fake_output):
+    return cross_entropy(tf.ones_like(fake_output), fake_output)
+
+def build_feature_extractor(in_model):
+    model = Sequential()
+    for layer in in_model.layers[:config.FEAT_XTRCTR_LAYERS]:
+        model.add(layer)
+    return model
+
 def log_to_tensorboard(writer, name, text, step):
     with writer.as_default():
         tf.summary.text(name, data=text, step=step)
 
-def train(generator, discriminator, dataset, start_epoch, writer):
-    # set up optimizers
-    generator_optimizer = tf.keras.optimizers.Adam(config.GEN_LEARN_RATE)
-    discriminator_optimizer = tf.keras.optimizers.Adam(config.DISC_LEARN_RATE)
-    # Setup the binary cross entropy loss
-    cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=False)
-    
-    def build_feature_extractor():
-        model = Sequential()
-        for layer in discriminator.layers[:config.FEAT_XTRCTR_LAYERS]:
-            model.add(layer)
-        return model
-
-    feature_extractor = build_feature_extractor()
-    
-    # Define loss functions
-    def discriminator_loss(real_output, fake_output, real_label_noise, fake_label_noise):
-        noisy_real_labels = tf.ones_like(real_output) - real_label_noise
-        noisy_fake_labels = tf.zeros_like(fake_output) + fake_label_noise
-
-        real_loss = cross_entropy(noisy_real_labels * config.DISC_CONFIDENCE, real_output)
-        fake_loss = cross_entropy(noisy_fake_labels, fake_output)
-        
-        total_loss = real_loss + fake_loss
-        return total_loss
-
-    def generator_loss(fake_output):
-        return cross_entropy(tf.ones_like(fake_output), fake_output)
+def train(generator, discriminator, gan, dataset, start_epoch, writer):
+    # set up feature extractor
+    feature_extractor = build_feature_extractor(discriminator)
     
     # Average metrics trackers
     avg_gen_loss_tracker = tf.keras.metrics.Mean(name='avg_gen_loss')
@@ -78,51 +91,74 @@ def train(generator, discriminator, dataset, start_epoch, writer):
     avg_real_accuracy_tracker = tf.keras.metrics.Mean(name='avg_real_accuracy')
     avg_fake_accuracy_tracker = tf.keras.metrics.Mean(name='avg_fake_accuracy')
     
+    batch_per_epoch = int(dataset.shape[0] / config.BATCH_SIZE)
+    half_batch = int(config.BATCH_SIZE / 2)
+    
     with writer.as_default():
         for epoch in range(start_epoch, config.EPOCHS):
             start_time = time.time()
-            for image_batch in dataset:
-                # Ensure consistent batch size for the last batch
-                if image_batch.shape[0] != config.BATCH_SIZE:
-                    continue  # Skip the last incomplete batch
+            for j in range(batch_per_epoch):
+                # Generate noise for a whole batch
                 noise = tf.random.normal([config.BATCH_SIZE, config.NOISE_DIM])
+                # Generate fake images
+                generated_images = generator(noise, training=True)
                 
-                with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
-                    generated_images = generator(noise, training=True)
+                # Get randomly selected 'real' samples
+                X_real, y_real = saveNload.generate_real_samples(dataset, half_batch)
+                # Generate 'fake' examples
+                X_fake, y_fake = saveNload.generate_fake_samples(generator, half_batch)
+                # Create training set for the discriminator merging the two above
+                X, y = vstack((X_real, X_fake)), vstack((y_real, y_fake))
 
-                    real_output = discriminator(image_batch, training=True)
-                    fake_output = discriminator(generated_images, training=True)
+                # Update discriminator model weights
+                if (config.FEATURE_MATCHING):
+                    # set up optimizers
+                    generator_optimizer = tf.keras.optimizers.Adam(config.GEN_LEARN_RATE)
+                    discriminator_optimizer = tf.keras.optimizers.Adam(config.DISC_LEARN_RATE)
                     
-                    # Adding noise to labels to soften
-                    real_label_noise = tf.random.uniform(shape=tf.shape(real_output), minval=config.REAL_NOISE_MIN_VAL, maxval=config.REAL_NOISE_MAX_VAL)
-                    fake_label_noise = tf.random.uniform(shape=tf.shape(fake_output), minval=config.FAKE_NOISE_MIN_VAL, maxval=config.FAKE_NOISE_MAX_VAL)
-                    
-                    # Get feature representations
-                    real_features = feature_extractor(image_batch)
-                    fake_features = feature_extractor(generated_images)
-                    
-                    # Calculate feature matching loss
-                    feature_loss = tf.reduce_mean(tf.abs(real_features - fake_features))
-                    
-                    # Combine with original generator loss
-                    gen_loss = generator_loss(fake_output) + config.LAMBDA_FEATURE * feature_loss
-                    disc_loss = discriminator_loss(real_output, fake_output, real_label_noise, fake_label_noise)
+                    with tf.GradientTape() as disc_tape:
+                        real_output = discriminator(X_real, training=True)
+                        fake_output = discriminator(X_fake, training=True)
 
-                gradients_of_generator = gen_tape.gradient(gen_loss, generator.trainable_variables)
-                gradients_of_discriminator = disc_tape.gradient(disc_loss, discriminator.trainable_variables)
+                        # Get feature representations
+                        real_features = feature_extractor(X_real)
+                        fake_features = feature_extractor(X_fake)
 
-                generator_optimizer.apply_gradients(zip(gradients_of_generator, generator.trainable_variables))
-                discriminator_optimizer.apply_gradients(zip(gradients_of_discriminator, discriminator.trainable_variables))
-                
-                # Calculate and log discriminator accuracy
-                real_accuracy = tf.reduce_mean(tf.cast(tf.less(real_output, 0.5), tf.float32))
-                fake_accuracy = tf.reduce_mean(tf.cast(tf.greater(fake_output, 0.5), tf.float32))
-                
-                # Track average losses and accuracies
-                avg_gen_loss_tracker.update_state(gen_loss)
-                avg_disc_loss_tracker.update_state(disc_loss)
-                avg_real_accuracy_tracker.update_state(real_accuracy)
-                avg_fake_accuracy_tracker.update_state(fake_accuracy)
+                        # Calculate feature matching loss
+                        feature_loss = tf.reduce_mean(tf.abs(real_features - fake_features))
+
+                        # Calculate total discriminator loss
+                        d_loss = discriminator_loss(real_output, fake_output, y_real, y_fake) + config.LAMBDA_FEATURE * feature_loss
+
+                    # Calculate gradients and update discriminator weights
+                    gradients_of_discriminator = disc_tape.gradient(d_loss, discriminator.trainable_variables)
+                    discriminator_optimizer.apply_gradients(zip(gradients_of_discriminator, discriminator.trainable_variables))
+
+                    # Update generator model weights
+                    with tf.GradientTape() as gen_tape:
+                        fake_output = discriminator(generated_images, training=False)
+                        g_loss = generator_loss(fake_output)
+
+                    # Calculate gradients and update generator weights
+                    gradients_of_generator = gen_tape.gradient(g_loss, generator.trainable_variables)
+                    generator_optimizer.apply_gradients(zip(gradients_of_generator, generator.trainable_variables))
+                    
+                    # Track average losses
+                    avg_gen_loss_tracker.update_state(g_loss)
+                    avg_disc_loss_tracker.update_state(d_loss)
+                else:
+                    d_loss, _ = discriminator.train_on_batch(X, y)
+                    # prepare points in latent space as input for the generator
+                    X_gan = saveNload.generate_latent_points()
+                    # create inverted labels for the fake samples
+                    y_gan = ones((config.BATCH_SIZE, 1))
+                    
+                    # update the generator via the discriminator's error 
+                    g_loss = gan.train_on_batch(X_gan, y_gan)
+
+                    # Track average losses and accuracies
+                    avg_gen_loss_tracker.update_state(g_loss)
+                    avg_disc_loss_tracker.update_state(d_loss)
 
             if (epoch % config.CHECKPOINT_INTERVAL) == 0 and epoch != start_epoch:
                 saveNload.save_model(generator, discriminator, epoch, writer)
@@ -132,6 +168,7 @@ def train(generator, discriminator, dataset, start_epoch, writer):
             print(f'Epoch {epoch+1}/{config.EPOCHS} completed in {duration:.2f} seconds')
             name = "Epoch Status"
             text = "Epoch " + str(epoch+1) +"/" + str(config.EPOCHS) + " completed in " + str(duration) + " seconds"
+            saveNload.eval_discrim(epoch, generator, discriminator, dataset, writer)
             log_to_tensorboard(writer, name, text, epoch+1)
             
             # Log the losses and accuracies to TensorBoard
@@ -139,8 +176,8 @@ def train(generator, discriminator, dataset, start_epoch, writer):
             with writer.as_default():
                 tf.summary.scalar('Average Generator Loss', avg_gen_loss_tracker.result(), step=epoch)
                 tf.summary.scalar('Average Discriminator Loss', avg_disc_loss_tracker.result(), step=epoch)
-                tf.summary.scalar('Average Real Accuracy', avg_real_accuracy_tracker.result(), step=epoch)
-                tf.summary.scalar('Average Fake Accuracy', avg_fake_accuracy_tracker.result(), step=epoch)
+                tf.summary.scalar('Average Real Accuracy', avg_real_accuracy_tracker.result()*100, step=epoch)
+                tf.summary.scalar('Average Fake Accuracy', avg_fake_accuracy_tracker.result()*100, step=epoch)
                 writer.flush()
             if (epoch % 5) == 0:
                 saveNload.generate_and_save_images(epoch, generator, writer)

@@ -19,12 +19,19 @@ DISC_ALPHA = 0.2
 DISC_NODES = 64
 DISC_BETA_1 = 0.5
 
+GAN_BETA_1 = 0.5
+
+SAMPLES = 100
+
 # --- Learning Rate & Scheduling ---
 # Learning rates for generator and discriminator
 GEN_LEARN_RATE = 0.003
 DISC_LEARN_RATE = 0.0002
+GAN_LEARN_RATE = 0.0002
 
 # --- Feature Matching ---
+# Enable
+FEATURE_MATCHING = False
 # Number of layers from the discriminator to use in the feature extractor
 FEAT_XTRCTR_LAYERS = 5
 # Value for how much to give weight to feature matching loss
