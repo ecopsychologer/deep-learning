@@ -1,9 +1,10 @@
 import tensorflow as tf
 import matplotlib.pyplot as plt
-from numpy import expand_dims, randint, ones, zeros
+from numpy import expand_dims, ones, zeros
 from keras.datasets.mnist import load_data
 import config, glob, re, config, os, stat, train
-from numpy.random import randn
+from numpy.random import randn, randint
+
 
 # load and prepare mnist training images
 def load_samples():

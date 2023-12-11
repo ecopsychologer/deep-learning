@@ -3,7 +3,7 @@ from keras.optimizers import Adam
 from keras.models import Sequential
 from keras.layers import Dense, Reshape, Flatten, Conv2D, Conv2DTranspose, LeakyReLU, Dropout
 from tensorflow.keras import Sequential
-from numpy import expand_dims, zeros, ones, vstack
+from numpy import ones, vstack
 import config, saveNload, time
 
 seed = tf.random.normal([config.NUM_EXAMPLES_TO_GEN, config.NOISE_DIM])
