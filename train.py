@@ -107,7 +107,6 @@ def train(generator, discriminator, gan, dataset, start_epoch, writer):
     
     with writer.as_default():
         for epoch in range(start_epoch, config.EPOCHS):
-            last_latent_vector
             start_time = time.time()
             for j in range(batch_per_epoch):
                 # Generate noise for a whole batch
