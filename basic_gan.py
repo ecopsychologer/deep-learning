@@ -25,6 +25,7 @@ def main(reset=False):
     # Initialize models
     generator = train.build_generator()
     discriminator = train.build_discriminator()
+    gan = train.define_gan(generator, discriminator)
     
     # Load if a checkpoint is available
     if latest_epoch is not None:
@@ -35,7 +36,7 @@ def main(reset=False):
     summary_writer = tf.summary.create_file_writer(config.LOG_DIR)
     # Start training
     start_epoch = latest_epoch if latest_epoch is not None else 0
-    train.train(generator, discriminator, train_dataset, start_epoch, summary_writer)
+    train.train(generator, discriminator, gan, train_dataset, start_epoch, summary_writer)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
