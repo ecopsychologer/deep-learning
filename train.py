@@ -106,7 +106,7 @@ def train(generator, discriminator, gan, dataset, start_epoch, writer):
                 # Get randomly selected 'real' samples
                 X_real, y_real = saveNload.generate_real_samples(dataset, half_batch)
                 # Generate 'fake' examples
-                X_fake, y_fake = saveNload.generate_fake_samples(generator, half_batch)
+                X_fake, y_fake = saveNload.generate_fake_samples(generator, config.LATENT_DIM, half_batch)
                 # Create training set for the discriminator merging the two above
                 X, y = vstack((X_real, X_fake)), vstack((y_real, y_fake))
 
