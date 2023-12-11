@@ -8,28 +8,28 @@ def find_latest_img(img_folder="./logs/", img_name="generated_plot_e", img_ext="
     return max(imgs) if imgs else None
 
 def create_gif(frame_duration_ms=250, image_folder="./logs/", output_path="./results/epochs_0_to_", output_ext=".gif"):
-    # Find the latest epoch number
-    latest_epoch_number = find_latest_img(image_folder)
-    if latest_epoch_number is None:
+    latest_img_number = find_latest_img(image_folder)
+    # Check
+    if latest_img_number is None:
         print("No images found in the specified folder.")
         return
     
-    # Load images for each epoch version
+    # Load images
     images = []
-    for version in range(config.INTERPOLATION_STEPS):
-        filename = f"generated_plot_e{str(latest_epoch_number).zfill(3)}-{version}.png"
-        file_path = os.path.join(image_folder, filename)
-        if os.path.exists(file_path):
-            images.append(Image.open(file_path))
+    for epoch in range(1, latest_img_number + 1):
+        for version in range(config.INTERPOLATION_STEPS):
+            filename = f"generated_plot_e{str(epoch)}-{version}.png"
+            file_path = os.path.join(image_folder, filename)
+            if os.path.exists(file_path):
+                images.append(Image.open(file_path))
 
+    name = output_path + str(latest_img_number) + output_ext
     # Ensure there are images to create a gif
     if images:
-        gif_name = f"{output_path}{str(latest_epoch_number).zfill(3)}{output_ext}"
         # Save the images as a gif
-        images[0].save(gif_name, save_all=True, append_images=images[1:], duration=frame_duration_ms, loop=1)
-        print(f"GIF successfully created from images of epoch {latest_epoch_number} and saved to {gif_name}")
+        images[0].save(name, save_all=True, append_images=images[1:], duration=frame_duration_ms, loop=1)
+        print(f"GIF successfully created from images through epoch {latest_img_number} and saved to {output_path}")
     else:
-        print(f"No images found for epoch {latest_epoch_number} to create a gif.")
-
+        print("No images found to create a gif.")
 # Usage
 create_gif()  # frame_duration is in milliseconds
