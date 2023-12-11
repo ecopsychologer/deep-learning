@@ -10,8 +10,8 @@ I started this just to learn about deep learning, and to create a basic model. I
 ![Epoch 1150](results/epoch1150.png)
 
 ## Here are some gifs, because I love visualizing deep learning
-### Epochs 0 to 24
-![Epochs 0 to 24](results/epochs_0_to_24.gif)
+### Epochs 0 to 26, v1 of Interpolation
+![Epochs 0 to 26](results/interpolatedv1_epoch26.gif)
 
 ### Epochs 0 to 1150
 ![Epochs 0 to 1150](results/epochs_0_to_1150.gif)
