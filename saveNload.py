@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from numpy import expand_dims
 from keras.datasets.mnist import load_data
 import config, glob, re, config, os, stat, train
+from numpy.random import randn
 
 # load and prepare mnist training images
 def load_real_samples():
@@ -18,21 +19,33 @@ def load_real_samples():
 
 train_images = load_real_samples()
 
-def generate_and_save_images(model, epoch, test_input, writer):
-    predictions = model(test_input, training=False)
-
-    fig = plt.figure(figsize=(5, 5))
-
-    for i in range(predictions.shape[0]):
-        plt.subplot(5, 5, i+1)
-        plt.imshow(predictions[i, :, :] * 127.5 + 127.5, cmap='gray_r')
+def log_and_save_plot(examples, epoch, writer, n=5):
+    fig = plt.figure(figsize=(n, n))
+    # plot images
+    for i in range(n * n):
+        # define subplot
+        plt.subplot(n, n, 1 + i)
+        # turn off axis
         plt.axis('off')
-
+        # plot raw pixel data
+        plt.imshow(examples[i, :, :, 0], cmap='gray_r')
+        # save plot to file
+    filename = 'generated_plot_e%03d.png' % (epoch+1)
+    plt.savefig(filename)
     # Save the images for TensorBoard
     with writer.as_default():
         tf.summary.image("Generated Images", plot_to_image(fig), step=epoch)
+        writer.flush()
+    plt.close()
 
-    plt.close(fig)  # Close the figure to free memory
+def generate_and_save_images(epoch, g_model, latent_dim, writer, n_samples=100):
+    # generate points in latent space
+    x_input = randn(latent_dim * n_samples)
+    # reshape into a batch of inputs for the network
+    x_input = x_input.reshape(n_samples, latent_dim)
+    # predict outputs
+    X = g_model.predict(x_input)
+    log_and_save_plot(X, epoch, writer)
 
 def plot_to_image(figure):
     """Converts the matplotlib plot specified by 'figure' to a PNG image and
