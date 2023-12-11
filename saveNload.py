@@ -4,6 +4,10 @@ from numpy import expand_dims, ones, zeros
 from keras.datasets.mnist import load_data
 import config, glob, re, config, os, stat, train
 from numpy.random import randn, randint
+import logging
+import warnings
+warnings.filterwarnings('ignore', category=DeprecationWarning)
+tf.get_logger().setLevel(logging.ERROR)
 
 
 # load and prepare mnist training images

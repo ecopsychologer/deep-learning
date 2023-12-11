@@ -5,6 +5,10 @@ from keras.layers import Dense, Reshape, Flatten, Conv2D, Conv2DTranspose, Leaky
 from tensorflow.keras import Sequential
 from numpy import ones, vstack
 import config, saveNload, time
+import logging
+import warnings
+warnings.filterwarnings('ignore', category=DeprecationWarning)
+tf.get_logger().setLevel(logging.ERROR)
 
 seed = tf.random.normal([config.NUM_EXAMPLES_TO_GEN, config.NOISE_DIM])
 
