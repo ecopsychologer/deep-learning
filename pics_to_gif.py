@@ -7,7 +7,7 @@ def find_latest_img(img_folder="./logs/", img_name="generated_plot_e", img_ext="
     imgs = [int(re.search(fr'{img_name}(\d+)-\d+{img_ext}', file).group(1)) for file in img_files]
     return max(imgs) if imgs else None
 
-def add_text_to_image(image, text, position=(10, 10), font_size=20, font_color="black"):
+def add_text_to_image(image, text, position=(12, 12), font_size=24, font_color="black"):
     draw = ImageDraw.Draw(image)
     font = ImageFont.truetype("/usr/share/fonts/truetype/ubuntu/Ubuntu-R.ttf", font_size)  # You can change the font and its size
     draw.text(position, text, font=font, fill=font_color)
