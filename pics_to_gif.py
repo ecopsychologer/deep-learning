@@ -28,7 +28,7 @@ def create_gif(frame_duration_ms=250, image_folder="./logs/", output_path="./res
     if images:
         # Save the images as a gif
         images[0].save(name, save_all=True, append_images=images[1:], duration=frame_duration_ms, loop=1)
-        print(f"GIF successfully created from images through epoch {latest_img_number} and saved to {output_path}")
+        print(f"GIF successfully created from images through epoch {latest_img_number} and saved to {output_path}{str(epoch)}")
     else:
         print("No images found to create a gif.")
 # Usage
