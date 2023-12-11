@@ -80,7 +80,7 @@ def log_and_save_plot(examples, epoch, writer, n=5):
         # plot raw pixel data
         plt.imshow(examples[i, :, :, 0], cmap='gray_r')
         # save plot to file
-    filename = config.LOG_DIR + 'generated_plot_e%03d.png' % (epoch+1)
+    filename = config.LOG_DIR + 'generated_plot_e%03d.png' % (epoch)
     plt.savefig(filename)
     # Save the images for TensorBoard
     with writer.as_default():
