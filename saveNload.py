@@ -109,7 +109,7 @@ def generate_and_save_images(epoch, generator, writer, latent_dim=config.LATENT_
     # predict outputs
     X = generator.predict(x_input)
     log_and_save_plot(X, epoch, writer)
-    if (1 <= epoch <= 50):
+    if (2 <= epoch <= 51):
         generate_interpolated_images(generator, epoch - 1, epoch, writer)
 
 def plot_to_image(figure):
@@ -135,6 +135,7 @@ def find_latest_epoch():
 
 def save_latent_vectors(latent_vectors, epoch):
     filename = f"{config.LOG_DIR}latent_vectors_epoch_{epoch}.npy"
+    print(f"Saved Latent Vector for Epoch {epoch}")
     np.save(filename, latent_vectors)
 
 def save_model(gen, disc, epoch, writer):
