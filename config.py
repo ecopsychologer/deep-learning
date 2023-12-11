@@ -84,7 +84,8 @@ NUM_EXAMPLES_TO_GEN = 25
 # Dimensionality of the noise vector
 NOISE_DIM = 100
 # Interpolation Steps
-INTERPOLATION_STEPS = 10
+INTERPOLATION_STEPS = 14
+INTERPOLATION_OVERLAP = 5
 
 def create_console_space():
     print("\n\\\\**********||=+=||**********//")

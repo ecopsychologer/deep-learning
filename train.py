@@ -54,7 +54,7 @@ def define_gan(generator, discriminator):
     model.compile(loss='binary_crossentropy', optimizer=opt)
     return model
 
-def interpolate_latent_points(start_points, end_points, num_steps=config.INTERPOLATION_STEPS, overlap=3):
+def interpolate_latent_points(start_points, end_points, num_steps=config.INTERPOLATION_STEPS, overlap=config.INTERPOLATION_OVERLAP):
     interpolated_points = []
     for i in range(num_steps + overlap):
         alpha = i / float(num_steps)
