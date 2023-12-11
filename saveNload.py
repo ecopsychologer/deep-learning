@@ -102,7 +102,7 @@ def generate_and_save_images(epoch, generator, writer, latent_dim=config.LATENT_
     # predict outputs
     X = generator.predict(x_input)
     log_and_save_plot(X, epoch, writer)
-    if (2 <= epoch <= 51):
+    if (2 <= epoch):
         generate_interpolated_images(generator, epoch - 2, epoch - 1, writer)
 
 def plot_to_image(figure):
