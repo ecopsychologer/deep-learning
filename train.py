@@ -6,10 +6,6 @@ from keras.layers import Dense, Reshape, Flatten, Conv2D, Conv2DTranspose, Leaky
 from tensorflow.keras import Sequential
 from numpy import ones, vstack
 import config, saveNload, time
-import logging
-import warnings
-warnings.filterwarnings('ignore', category=DeprecationWarning)
-tf.get_logger().setLevel(logging.ERROR)
 
 seed = tf.random.normal([config.NUM_EXAMPLES_TO_GEN, config.NOISE_DIM])
 
@@ -58,14 +54,13 @@ def define_gan(generator, discriminator):
     model.compile(loss='binary_crossentropy', optimizer=opt)
     return model
 
-def interpolate_latent_points(start_points, end_points, num_steps=10):
+def interpolate_latent_points(start_points, end_points, num_steps=config.INTERPOLATION_STEPS, overlap=3):
     interpolated_points = []
-    for i in range(num_steps + 1):
+    for i in range(num_steps + overlap):
         alpha = i / float(num_steps)
         interpolated = alpha * end_points + (1 - alpha) * start_points
         interpolated_points.append(interpolated)
-    return np.array(interpolated_points[:-1])  # Exclude the last point as it will be the start of the next interpolation
-
+    return np.array(interpolated_points[overlap-1:-1])  # Skip the first 'overlap-1' points and the last point
 
 # Setup the binary cross entropy loss
 cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=False)
