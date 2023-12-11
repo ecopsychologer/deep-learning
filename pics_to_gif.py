@@ -9,7 +9,7 @@ def find_latest_img(img_folder="./logs/", img_name="generated_plot_e", img_ext="
 
 def add_text_to_image(image, text, position=(10, 10), font_size=20, font_color="black"):
     draw = ImageDraw.Draw(image)
-    font = ImageFont.truetype("arial.ttf", font_size)  # You can change the font and its size
+    font = ImageFont.load_default()  # You can change the font and its size
     draw.text(position, text, font=font, fill=font_color)
     return image
 
