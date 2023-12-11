@@ -1,4 +1,4 @@
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 import os, glob, re, config
 
 def find_latest_img(img_folder="./logs/", img_name="generated_plot_e", img_ext=".png"):
@@ -6,6 +6,12 @@ def find_latest_img(img_folder="./logs/", img_name="generated_plot_e", img_ext="
     img_files = glob.glob(full_path)
     imgs = [int(re.search(fr'{img_name}(\d+)-\d+{img_ext}', file).group(1)) for file in img_files]
     return max(imgs) if imgs else None
+
+def add_text_to_image(image, text, position=(10, 10), font_size=20, font_color="black"):
+    draw = ImageDraw.Draw(image)
+    font = ImageFont.truetype("arial.ttf", font_size)  # You can change the font and its size
+    draw.text(position, text, font=font, fill=font_color)
+    return image
 
 def create_gif(frame_duration_ms=config.FRAME_DURATION, image_folder="./logs/", output_folder="./results/", output_name="epochs_0_to_", output_ext=".gif"):
     output_path = output_folder + output_name
@@ -22,7 +28,10 @@ def create_gif(frame_duration_ms=config.FRAME_DURATION, image_folder="./logs/", 
             filename = f"generated_plot_e{str(epoch)}-{version}.png"
             file_path = os.path.join(image_folder, filename)
             if os.path.exists(file_path):
-                images.append(Image.open(file_path))
+                with Image.open(file_path) as img:
+                    img_with_text = add_text_to_image(img, f"Generation {epoch}")
+                    images.append(img_with_text)
+                #images.append(Image.open(file_path))
 
     name = output_path + str(latest_img_number) + output_ext
     # Ensure there are images to create a gif
