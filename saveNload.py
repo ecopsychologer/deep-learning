@@ -1,15 +1,22 @@
 import tensorflow as tf
 import matplotlib.pyplot as plt
-import glob, re, config, os, stat, train
+from numpy import expand_dims
+from keras.datasets.mnist import load_data
+import config, glob, re, config, os, stat, train
 
-def load_data():
-    (train_images, _), (_, _) = tf.keras.datasets.mnist.load_data()
-    # Normalize the images to [-1, 1]
-    train_images = train_images.reshape(train_images.shape[0], 28, 28).astype('float32')
-    train_images = (train_images - 127.5) / 127.5
-    return train_images
+# load and prepare mnist training images
+def load_real_samples():
+    # load mnist dataset
+    (trainX, _), (_, _) = load_data()
+    # expand to 3d, e.g. add channels dimension
+    X = expand_dims(trainX, axis=-1)
+    # convert from unsigned ints to floats
+    X = X.astype('float32')
+    # scale from [0,255] to [0,1]
+    X = X / 255.0
+    return X
 
-train_images = load_data()
+train_images = load_real_samples()
 
 def generate_and_save_images(model, epoch, test_input, writer):
     predictions = model(test_input, training=False)

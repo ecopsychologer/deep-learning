@@ -11,16 +11,18 @@ RANDOM_SEED = 42
 # These are the number of units in the dense layers of your generator and discriminator models. Increasing these can give the network more capacity to learn complex patterns, but too much complexity can lead to overfitting or longer training times.
 GEN_COMPLEXITY = 512
 DISC_COMPLEXITY = 128 # lower rate for the discriminator helps generator
+GEN_ALPHA = 0.2
+GEN_NODES = 128
+DROPOUT_RATE = 0.4
+
+DISC_ALPHA = 0.2
+DISC_NODES = 64
+DISC_BETA_1 = 0.5
 
 # --- Learning Rate & Scheduling ---
 # Learning rates for generator and discriminator
 GEN_LEARN_RATE = 0.003
-DISC_LEARN_RATE = 0.000001
-
-# Learning rate decay factor (None for no decay)
-LR_DECAY_FACTOR = None  # e.g., 0.95
-# Epoch interval for applying learning rate decay
-LR_DECAY_EPOCHS = None  # e.g., 100
+DISC_LEARN_RATE = 0.0002
 
 # --- Feature Matching ---
 # Number of layers from the discriminator to use in the feature extractor
@@ -30,17 +32,16 @@ LAMBDA_FEATURE = 0.2
 
 # --- Training Settings ---
 # Larger batches provide more stable gradients but may require more memory and computational power, while smaller batches can sometimes encourage diversity in the generated images and can lead to faster convergence but may also introduce more noise into the training process.
-BATCH_SIZE = 180
+BATCH_SIZE = 256
 # Total number of epochs for training
 EPOCHS = 5000
+LATENT_DIM = 100
 
 # --- Data Handling ---
 # Buffer size for shuffling data
 BUFFER_SIZE = 60000
 
-# --- Regularization Techniques ---
-# Dropout rate (None for no dropout)
-DROPOUT_RATE = 0.3  # e.g., 0.3
+
 
 # --- Noise and Confidence Parameters ---
 # Noise values for training stability

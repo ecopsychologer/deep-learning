@@ -1,66 +1,42 @@
 import tensorflow as tf
-from tensorflow.keras.layers import Dense, Flatten, Reshape, GaussianNoise, BatchNormalization, Dropout, Layer
+from keras.optimizers import Adam
+from keras.models import Sequential
+from keras.layers import Dense, Reshape, Flatten, Conv2D, Conv2DTranspose, LeakyReLU, Dropout
 from tensorflow.keras import Sequential
 import config, saveNload, time
 
 seed = tf.random.normal([config.NUM_EXAMPLES_TO_GEN, config.NOISE_DIM])
 
-class MiniBatchDiscrimination(Layer):
-    def __init__(self, num_kernels, kernel_dim, **kwargs):
-        super(MiniBatchDiscrimination, self).__init__(**kwargs)
-        self.num_kernels = num_kernels
-        self.kernel_dim = kernel_dim
-
-    def build(self, input_shape):
-        self.kernel = self.add_weight(
-            name='kernel',
-            shape=(input_shape[-1], self.num_kernels * self.kernel_dim),
-            initializer='glorot_uniform',
-            trainable=True)
-
-    def call(self, input):
-        activation = tf.matmul(input, self.kernel)
-        activation = tf.reshape(activation, (-1, self.num_kernels, self.kernel_dim))
-        diff = tf.expand_dims(activation, 3) - tf.expand_dims(tf.transpose(activation, [1, 2, 0]), 0)
-        l1_norm = tf.reduce_sum(tf.abs(diff), axis=2)
-        mb_feats = tf.reduce_sum(tf.exp(-l1_norm), axis=-1)
-        return tf.concat([input, mb_feats], axis=1)
-
-    def get_config(self):
-        config = super(MiniBatchDiscrimination, self).get_config()
-        config.update({
-            'num_kernels': self.num_kernels,
-            'kernel_dim': self.kernel_dim
-        })
-        return config
-
-
-def build_generator():
-    model = Sequential([
-        GaussianNoise(0.115, input_shape=(config.NOISE_DIM,)),      # Add noise to input
-        Dense(config.GEN_COMPLEXITY, activation='relu', input_shape=(100,)),  # 100-dimensional noise
-        BatchNormalization(),
-        Dropout(config.DROPOUT_RATE),                               # add dropout
-        Dense(config.GEN_COMPLEXITY, activation='LeakyReLU'),       # add an additional layer
-        Dropout(config.DROPOUT_RATE),                               # add dropout
-        MiniBatchDiscrimination(30, 3),                             # mini batch discrimination
-        Dense(config.GEN_COMPLEXITY, activation='LeakyReLU'),       # add an additional layer
-        Dropout(config.DROPOUT_RATE),                               # add dropout
-        Dense(784, activation='sigmoid'),
-        Reshape((28, 28))                                           # Reshape to 28x28 image
-    ])
+# switch to convolutional approach
+def build_generator(latent_dim=config.LATENT_DIM):
+    model = Sequential()
+    # foundation for 7x7 image
+    n_nodes = config.GEN_NODES * 7 * 7
+    model.add(Dense(n_nodes, input_dim=latent_dim))
+    model.add(LeakyReLU(alpha=config.GEN_ALPHA))
+    model.add(Reshape((7, 7, config.GEN_NODES)))
+    # upsample to 14x14
+    model.add(Conv2DTranspose(config.GEN_NODES, (4,4), strides=(2,2), padding='same'))
+    model.add(LeakyReLU(alpha=config.GEN_ALPHA))
+    # upsample to 28x28
+    model.add(Conv2DTranspose(config.GEN_NODES, (4,4), strides=(2,2), padding='same'))
+    model.add(LeakyReLU(alpha=config.GEN_ALPHA))
+    model.add(Conv2D(1, (7,7), activation='sigmoid', padding='same'))
     return model
 
-def build_discriminator():
-    model = Sequential([
-        Flatten(input_shape=(28, 28)),
-        Dense(config.DISC_COMPLEXITY, activation='LeakyReLU'),
-        Dropout(config.DROPOUT_RATE),                               # Add dropout
-        MiniBatchDiscrimination(50, 5),                             # mini batch discrimination
-        Dense(config.DISC_COMPLEXITY, activation='LeakyReLU'),
-        Dropout(config.DROPOUT_RATE),                               # Add 2nd dropout
-        Dense(1, activation='sigmoid')
-    ])
+def build_discriminator(in_shape=(28,28,1)):
+    model = Sequential()
+    model.add(Conv2D(config.DISC_NODES, (3,3), strides=(2, 2), padding='same', input_shape=in_shape))
+    model.add(LeakyReLU(alpha=config.DISC_ALPHA))
+    model.add(Dropout(config.DROPOUT_RATE))
+    model.add(Conv2D(config.DISC_NODES, (3,3), strides=(2, 2), padding='same'))
+    model.add(LeakyReLU(alpha=config.DISC_ALPHA))
+    model.add(Dropout(config.DROPOUT_RATE))
+    model.add(Flatten())
+    model.add(Dense(1, activation='sigmoid'))
+    # compile model
+    opt = Adam(learning_rate=config.DISC_LEARN_RATE, beta_1=config.DISC_BETA_1)
+    model.compile(loss='binary_crossentropy', optimizer=opt, metrics=['accuracy'])
     return model
 
 def log_to_tensorboard(writer, name, text, step):
