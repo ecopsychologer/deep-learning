@@ -87,7 +87,7 @@ NOISE_DIM = 100
 INTERPOLATION_STEPS = 22
 INTERPOLATION_OVERLAP = 7
 
-FRAME_DURATION = 60 # milliseconds
+FRAME_DURATION = 25 # milliseconds
 
 def create_console_space():
     print("\n\\\\**********||=+=||**********//")
