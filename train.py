@@ -88,8 +88,6 @@ def train(generator, discriminator, gan, dataset, start_epoch, writer):
     # Average metrics trackers
     avg_gen_loss_tracker = tf.keras.metrics.Mean(name='avg_gen_loss')
     avg_disc_loss_tracker = tf.keras.metrics.Mean(name='avg_disc_loss')
-    avg_real_accuracy_tracker = tf.keras.metrics.Mean(name='avg_real_accuracy')
-    avg_fake_accuracy_tracker = tf.keras.metrics.Mean(name='avg_fake_accuracy')
     
     batch_per_epoch = int(dataset.shape[0] / config.BATCH_SIZE)
     half_batch = int(config.BATCH_SIZE / 2)
@@ -176,16 +174,12 @@ def train(generator, discriminator, gan, dataset, start_epoch, writer):
             with writer.as_default():
                 tf.summary.scalar('Average Generator Loss', avg_gen_loss_tracker.result(), step=epoch)
                 tf.summary.scalar('Average Discriminator Loss', avg_disc_loss_tracker.result(), step=epoch)
-                tf.summary.scalar('Average Real Accuracy', avg_real_accuracy_tracker.result()*100, step=epoch)
-                tf.summary.scalar('Average Fake Accuracy', avg_fake_accuracy_tracker.result()*100, step=epoch)
                 writer.flush()
             if (epoch % 5) == 0:
                 saveNload.generate_and_save_images(epoch, generator, writer)
             # Reset metrics every epoch
             avg_gen_loss_tracker.reset_states()
             avg_disc_loss_tracker.reset_states()
-            avg_real_accuracy_tracker.reset_states()
-            avg_fake_accuracy_tracker.reset_states()
 
     # Generate after the final epoch
     saveNload.generate_and_save_images(config.EPOCHS, generator, writer)
