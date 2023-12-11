@@ -1,4 +1,5 @@
 import tensorflow as tf
+import numpy as np
 from keras.optimizers import Adam
 from keras.models import Sequential
 from keras.layers import Dense, Reshape, Flatten, Conv2D, Conv2DTranspose, LeakyReLU, Dropout
@@ -57,6 +58,13 @@ def define_gan(generator, discriminator):
     model.compile(loss='binary_crossentropy', optimizer=opt)
     return model
 
+def interpolate_latent_points(start_points, end_points, num_steps=10):
+    interpolated_points = []
+    for i in range(num_steps):
+        alpha = i / float(num_steps - 1)
+        interpolated = alpha * start_points + (1 - alpha) * end_points
+        interpolated_points.append(interpolated)
+    return np.array(interpolated_points)
 
 # Setup the binary cross entropy loss
 cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=False)
@@ -183,6 +191,10 @@ def train(generator, discriminator, gan, dataset, start_epoch, writer):
             # Reset metrics every epoch
             avg_gen_loss_tracker.reset_states()
             avg_disc_loss_tracker.reset_states()
+            
+            # Interpolate Latent Space for Visualization
+            latent_point_end_of_epoch = noise
+            saveNload.save_latent_vectors(latent_point_end_of_epoch, epoch)
 
     # Generate after the final epoch
     saveNload.generate_and_save_images(config.EPOCHS, generator, writer)

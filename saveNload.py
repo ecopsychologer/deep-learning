@@ -1,4 +1,5 @@
 import tensorflow as tf
+import numpy as np
 import matplotlib.pyplot as plt
 from numpy import expand_dims, ones, zeros
 from keras.datasets.mnist import load_data
@@ -69,7 +70,7 @@ def eval_discrim(epoch, generator, discriminator, dataset, writer, n_samples=100
         tf.summary.scalar('Discriminator Fake Accuracy', acc_fake*100, step=epoch)
         writer.flush()
 
-def log_and_save_plot(examples, epoch, writer, n=5):
+def log_and_save_plot(examples, epoch, writer, append=0, n=5):
     fig = plt.figure(figsize=(n, n))
     # plot images
     for i in range(n * n):
@@ -80,13 +81,25 @@ def log_and_save_plot(examples, epoch, writer, n=5):
         # plot raw pixel data
         plt.imshow(examples[i, :, :, 0], cmap='gray_r')
         # save plot to file
-    filename = config.LOG_DIR + 'generated_plot_e%03d.png' % (epoch)
+    if (append != 0):
+        filename = config.LOG_DIR + 'generated_plot_e' + str(epoch) + '-' + str(append) + '.png'
+    else:
+        filename = config.LOG_DIR + 'generated_plot_e' + str(epoch) + '.png'
     plt.savefig(filename)
     # Save the images for TensorBoard
     with writer.as_default():
         tf.summary.image("Generated Images", plot_to_image(fig), step=epoch)
         writer.flush()
     plt.close()
+    
+def generate_interpolated_images(generator, start_epoch, end_epoch, writer, num_steps=10):
+    start_points = np.load(f"{config.LOG_DIR}latent_vectors_epoch_{start_epoch}.npy")
+    end_points = np.load(f"{config.LOG_DIR}latent_vectors_epoch_{end_epoch}.npy")
+    interpolated_points = train.interpolate_latent_points(start_points, end_points, num_steps)
+    for i, points in enumerate(interpolated_points):
+        generated_images = generator.predict(points)
+        # Save or process these images
+        log_and_save_plot(generated_images, start_epoch, writer, i)
 
 def generate_and_save_images(epoch, generator, writer, latent_dim=config.LATENT_DIM, n_samples=100):
     # generate points in latent space
@@ -96,6 +109,8 @@ def generate_and_save_images(epoch, generator, writer, latent_dim=config.LATENT_
     # predict outputs
     X = generator.predict(x_input)
     log_and_save_plot(X, epoch, writer)
+    if (1 <= epoch <= 50):
+        generate_interpolated_images(generator, epoch - 1, epoch, writer)
 
 def plot_to_image(figure):
     """Converts the matplotlib plot specified by 'figure' to a PNG image and
@@ -117,6 +132,10 @@ def find_latest_epoch():
     gen_files = glob.glob(gen_path)
     epochs = [int(re.search(fr'{config.GEN_MODEL_PATH}(\d+){config.CHECKPOINT_EXT}', file).group(1)) for file in gen_files]
     return max(epochs) if epochs else None
+
+def save_latent_vectors(latent_vectors, epoch):
+    filename = f"{config.LOG_DIR}latent_vectors_epoch_{epoch}.npy"
+    np.save(filename, latent_vectors)
 
 def save_model(gen, disc, epoch, writer):
     config.create_console_space()

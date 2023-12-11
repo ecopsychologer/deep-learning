@@ -71,10 +71,13 @@ GEN_WEIGHTS_PATH = "./gen"
 DISC_WEIGHTS_PATH = "./disc"
 LOG_DIR = "./logs/"
 CHECKPOINT_EXT = ".keras"
+
 GEN_MODEL_PRE = "gen_model_epoch_"
 DISC_MODEL_PRE = "disc_model_epoch_"
 GEN_MODEL_PATH = LOG_DIR + GEN_MODEL_PRE
 DISC_MODEL_PATH = LOG_DIR + DISC_MODEL_PRE
+
+LATENT_VECTOR_PATH = LOG_DIR
 
 # Number of images to generate for visualization
 NUM_EXAMPLES_TO_GEN = 25
