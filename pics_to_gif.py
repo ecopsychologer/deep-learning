@@ -8,7 +8,7 @@ def find_latest_img(img_folder="./logs/", img_name="generated_plot_e", img_ext="
     imgs = [int(re.search(fr'{img_path}(\d+){img_ext}', file).group(1)) for file in img_files]
     return max(imgs) if imgs else None
 
-def create_gif(frame_duration_ms=100, image_folder="./logs/", output_path="./results/output.gif"):
+def create_gif(frame_duration_ms=100, image_folder="./logs/", output_path="./results/epochs_0_to_", output_ext=".gif"):
     # Find latest image
     latest_img_number = find_latest_img(image_folder)
     # Check
@@ -26,10 +26,12 @@ def create_gif(frame_duration_ms=100, image_folder="./logs/", output_path="./res
         if os.path.exists(file_path):
             images.append(Image.open(file_path))
 
+    name = output_path + latest_img_number + output_ext
     # Ensure there are images to create a gif
     if images:
         # Save the images as a gif
-        images[0].save(output_path, save_all=True, append_images=images[1:], duration=frame_duration_ms, loop=1)
+        images[0].save(name, save_all=True, append_images=images[1:], duration=frame_duration_ms, loop=1)
+        print(f"GIF successfully created from images through epoch {latest_img_number} and saved to {output_path}")
     else:
         print("No images found to create a gif.")
 

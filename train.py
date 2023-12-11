@@ -113,7 +113,7 @@ def train(generator, discriminator, gan, dataset, start_epoch, writer):
                 X, y = vstack((X_real, X_fake)), vstack((y_real, y_fake))
 
                 # Update discriminator model weights
-                if (config.FEATURE_MATCHING):
+                if (config.FEATURE_MATCHING): # feature matching is currently broken but I want to have the option to implement it
                     # set up optimizers
                     generator_optimizer = tf.keras.optimizers.Adam(config.GEN_LEARN_RATE)
                     discriminator_optimizer = tf.keras.optimizers.Adam(config.DISC_LEARN_RATE)
@@ -179,8 +179,7 @@ def train(generator, discriminator, gan, dataset, start_epoch, writer):
                 tf.summary.scalar('Average Generator Loss', avg_gen_loss_tracker.result(), step=epoch)
                 tf.summary.scalar('Average Discriminator Loss', avg_disc_loss_tracker.result(), step=epoch)
                 writer.flush()
-            if (epoch % 5) == 0:
-                saveNload.generate_and_save_images(epoch, generator, writer)
+            saveNload.generate_and_save_images(epoch, generator, writer)
             # Reset metrics every epoch
             avg_gen_loss_tracker.reset_states()
             avg_disc_loss_tracker.reset_states()
