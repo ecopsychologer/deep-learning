@@ -149,7 +149,7 @@ def train(generator, discriminator, gan, dataset, start_epoch, writer):
                 else:
                     d_loss, _ = discriminator.train_on_batch(X, y)
                     # prepare points in latent space as input for the generator
-                    X_gan = saveNload.generate_latent_points(config.LATENT_DIM, config.SAMPLES)
+                    X_gan = saveNload.generate_latent_points(config.SAMPLES, config.BATCH_SIZE)
                     # create inverted labels for the fake samples
                     y_gan = ones((config.BATCH_SIZE, 1))
                     
