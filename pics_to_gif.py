@@ -26,7 +26,7 @@ def create_gif(frame_duration_ms=250, image_folder="./logs/", output_path="./res
         if os.path.exists(file_path):
             images.append(Image.open(file_path))
 
-    name = output_path + latest_img_number + output_ext
+    name = output_path + str(latest_img_number) + output_ext
     # Ensure there are images to create a gif
     if images:
         # Save the images as a gif
