@@ -31,7 +31,7 @@ def generate_real_samples(dataset, n_samples=config.SAMPLES):
     return X, y
  
 # generate points in latent space as input for the generator
-def generate_latent_points(latent_dim=config.LATENT_DIM, n_samples=config.SAMPLES):
+def generate_latent_points(latent_dim=100, n_samples=config.SAMPLES):
     # generate points in the latent space
     x_input = randn(latent_dim * n_samples)
     # reshape into a batch of inputs for the network
