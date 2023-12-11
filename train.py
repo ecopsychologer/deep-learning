@@ -192,9 +192,7 @@ def train(generator, discriminator, gan, dataset, start_epoch, writer):
             avg_gen_loss_tracker.reset_states()
             avg_disc_loss_tracker.reset_states()
             
-            # Interpolate Latent Space for Visualization
-            latent_point_end_of_epoch = noise
-            saveNload.save_latent_vectors(latent_point_end_of_epoch, epoch)
+            saveNload.save_latent_vectors(noise, epoch)
 
     # Generate after the final epoch
     saveNload.generate_and_save_images(config.EPOCHS, generator, writer)

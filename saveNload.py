@@ -110,7 +110,7 @@ def generate_and_save_images(epoch, generator, writer, latent_dim=config.LATENT_
     X = generator.predict(x_input)
     log_and_save_plot(X, epoch, writer)
     if (2 <= epoch <= 51):
-        generate_interpolated_images(generator, epoch - 1, epoch, writer)
+        generate_interpolated_images(generator, epoch - 2, epoch - 1, writer)
 
 def plot_to_image(figure):
     """Converts the matplotlib plot specified by 'figure' to a PNG image and
