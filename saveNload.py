@@ -21,7 +21,7 @@ def load_samples():
 train_images = load_samples()
  
 # select real samples
-def generate_real_samples(dataset, n_samples=config.SAMPLES):
+def generate_real_samples(dataset, n_samples):
     # choose random instances
     inst = randint(0, dataset.shape[0], n_samples)
     # retrieve selected images
@@ -31,7 +31,7 @@ def generate_real_samples(dataset, n_samples=config.SAMPLES):
     return X, y
  
 # generate points in latent space as input for the generator
-def generate_latent_points(latent_dim=100, n_samples=config.SAMPLES):
+def generate_latent_points(latent_dim, n_samples):
     # generate points in the latent space
     x_input = randn(latent_dim * n_samples)
     # reshape into a batch of inputs for the network
@@ -39,7 +39,7 @@ def generate_latent_points(latent_dim=100, n_samples=config.SAMPLES):
     return x_input
  
 # use the generator to generate n fake examples, with class labels
-def generate_fake_samples(generator, latent_dim=config.LATENT_DIM, n_samples=config.SAMPLES):
+def generate_fake_samples(generator, latent_dim, n_samples):
     # generate points in latent space
     x_input = generate_latent_points(latent_dim, n_samples)
     # predict outputs
