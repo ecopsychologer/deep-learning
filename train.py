@@ -60,11 +60,12 @@ def define_gan(generator, discriminator):
 
 def interpolate_latent_points(start_points, end_points, num_steps=10):
     interpolated_points = []
-    for i in range(num_steps):
-        alpha = i / float(num_steps - 1)
-        interpolated = alpha * start_points + (1 - alpha) * end_points
+    for i in range(num_steps + 1):
+        alpha = i / float(num_steps)
+        interpolated = alpha * end_points + (1 - alpha) * start_points
         interpolated_points.append(interpolated)
-    return np.array(interpolated_points)
+    return np.array(interpolated_points[:-1])  # Exclude the last point as it will be the start of the next interpolation
+
 
 # Setup the binary cross entropy loss
 cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=False)
@@ -106,6 +107,7 @@ def train(generator, discriminator, gan, dataset, start_epoch, writer):
     
     with writer.as_default():
         for epoch in range(start_epoch, config.EPOCHS):
+            last_latent_vector
             start_time = time.time()
             for j in range(batch_per_epoch):
                 # Generate noise for a whole batch
@@ -169,6 +171,9 @@ def train(generator, discriminator, gan, dataset, start_epoch, writer):
                     # Track average losses and accuracies
                     avg_gen_loss_tracker.update_state(g_loss)
                     avg_disc_loss_tracker.update_state(d_loss)
+                    
+                    # store last latent vector
+                    last_latent_vector = X_gan
 
             if (epoch % config.CHECKPOINT_INTERVAL) == 0 and epoch != start_epoch:
                 saveNload.save_model(generator, discriminator, epoch, writer)
@@ -192,7 +197,7 @@ def train(generator, discriminator, gan, dataset, start_epoch, writer):
             avg_gen_loss_tracker.reset_states()
             avg_disc_loss_tracker.reset_states()
             
-            saveNload.save_latent_vectors(noise, epoch)
+            saveNload.save_latent_vectors(last_latent_vector, epoch)
 
     # Generate after the final epoch
     saveNload.generate_and_save_images(config.EPOCHS, generator, writer)
