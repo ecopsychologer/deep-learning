@@ -1,2 +1,3 @@
 *.keras
 ./logs/*
+.DS_STORE
