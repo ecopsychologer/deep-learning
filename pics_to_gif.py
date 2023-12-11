@@ -14,7 +14,7 @@ def find_latest_imgs(img_folder="./logs/", img_name="generated_plot_e", img_ext=
             latest_images[img_num] = max(latest_images.get(img_num, 0), sub_img_num)
     return latest_images
 
-def create_gif(frame_duration_ms=250, image_folder="./logs/", output_path="./results/epochs_", output_ext=".gif"):
+def create_gif(frame_duration_ms=100, image_folder="./logs/", output_path="./results/epochs_", output_ext=".gif"):
     latest_images = find_latest_imgs(image_folder, "generated_plot_e", ".png")
 
     if not latest_images:
