@@ -38,7 +38,7 @@ def log_and_save_plot(examples, epoch, writer, n=5):
         writer.flush()
     plt.close()
 
-def generate_and_save_images(epoch, g_model, latent_dim, writer, n_samples=100):
+def generate_and_save_images(epoch, g_model, writer, latent_dim=config.LATENT_DIM, n_samples=100):
     # generate points in latent space
     x_input = randn(latent_dim * n_samples)
     # reshape into a batch of inputs for the network

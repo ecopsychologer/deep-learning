@@ -143,7 +143,7 @@ def train(generator, discriminator, dataset, start_epoch, writer):
                 tf.summary.scalar('Average Fake Accuracy', avg_fake_accuracy_tracker.result(), step=epoch)
                 writer.flush()
             if (epoch % 5) == 0:
-                saveNload.generate_and_save_images(generator, epoch, seed, writer)
+                saveNload.generate_and_save_images(epoch, generator, writer)
             # Reset metrics every epoch
             avg_gen_loss_tracker.reset_states()
             avg_disc_loss_tracker.reset_states()
@@ -151,5 +151,5 @@ def train(generator, discriminator, dataset, start_epoch, writer):
             avg_fake_accuracy_tracker.reset_states()
 
     # Generate after the final epoch
-    saveNload.generate_and_save_images(generator, config.EPOCHS, seed, writer)
+    saveNload.generate_and_save_images(config.EPOCHS, generator, writer)
     exit
