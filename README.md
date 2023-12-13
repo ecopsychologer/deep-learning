@@ -1,6 +1,9 @@
 # Deep-Learning
 
-I started this just to learn about deep learning, and to create a basic model. It's become more fleshed out as I've read tutorials and incorporated quality of life improvements.
+I started this just to learn about deep learning, and to create a basic model. It's become more fleshed out as I've read tutorials and incorporated quality of life improvements for running tests and visualizing outputs. Below is a sample result
+
+### Epochs 0 to 300, v2 of Interpolation
+![Epochs 0 to 300, version 2 of interpolation](results/interpolatedv2_epoch300.gif)
 
 
 ### Sample from the first epoch:

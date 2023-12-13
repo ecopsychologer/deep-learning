@@ -13,7 +13,7 @@ def add_text_to_image(image, text, position=(12, 12), font_size=24, font_color="
     draw.text(position, text, font=font, fill=font_color)
     return image
 
-def create_gif(frame_duration_ms=config.FRAME_DURATION, max_epochs=500, image_folder="./logs/", output_folder="./results/", output_name="epochs_0_to_", output_ext=".gif"):
+def create_gif(frame_duration_ms=config.FRAME_DURATION, max_epochs=300, image_folder="./logs/", output_folder="./results/", output_name="epochs_0_to_", output_ext=".gif"):
     output_path = output_folder + output_name
     latest_img_number = find_latest_img(image_folder)
     # Check
@@ -27,6 +27,9 @@ def create_gif(frame_duration_ms=config.FRAME_DURATION, max_epochs=500, image_fo
     # Load images
     images = []
     for epoch in range(1, latest_img_number + 1):
+        if (epoch % 50) == 0:
+            print(f"{epoch} epochs")
+        
         for version in range(config.INTERPOLATION_STEPS):
             filename = f"generated_plot_e{str(epoch)}-{version}.png"
             file_path = os.path.join(image_folder, filename)
