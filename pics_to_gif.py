@@ -13,13 +13,16 @@ def add_text_to_image(image, text, position=(12, 12), font_size=24, font_color="
     draw.text(position, text, font=font, fill=font_color)
     return image
 
-def create_gif(frame_duration_ms=config.FRAME_DURATION, image_folder="./logs/", output_folder="./results/", output_name="epochs_0_to_", output_ext=".gif"):
+def create_gif(frame_duration_ms=config.FRAME_DURATION, max_epochs=500, image_folder="./logs/", output_folder="./results/", output_name="epochs_0_to_", output_ext=".gif"):
     output_path = output_folder + output_name
     latest_img_number = find_latest_img(image_folder)
     # Check
     if latest_img_number is None:
         print("No images found in the specified folder.")
         return
+    
+    if latest_img_number > max_epochs:
+        latest_img_number = max_epochs
     
     # Load images
     images = []
